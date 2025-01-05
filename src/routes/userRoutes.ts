@@ -1,14 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 
-import { getAllUsers, createUser } from '../controllers/userRegister';
+import { onBoardUser, hello, getUserById } from '../controllers/userRegister';
 
-// middleware
 const app = express();
 app.use(cors());
 
 
-app.get('/getAll', getAllUsers);
-app.post('/create', createUser);
+app.post('/create', onBoardUser);
+app.post('/getUserById', getUserById);
+app.get('/hello', hello);
 
 export default app;

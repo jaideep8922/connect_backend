@@ -13,34 +13,169 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
+model Status {
+  id     Int    @id @default(autoincrement())
+  status String
+
+  OrderDetails OrderDetails[]
+
+  OrderStatusHistory OrderStatusHistory[]
 }
 
-
 model Seller {
-  id        String      @id @default(uuid())
-  name      String
-  qrCode    String      @unique
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id            Int            @id @default(autoincrement())
+  businessName  String
+  businessOwner String
+  phone         String         @unique
+  gstNumber     String
+  shopMarka     String?
+  transport     String?
+  pincode       String
+  city          String
+  state         String
+  filePath      String?
+  qrCode        String?         @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  retailers     Retailer[]
+  Product       Product[]
+  OrderDetails  OrderDetails[]
 
-  // Relation: A seller can have many retailers
-  retailers Retailer[]
+  Notes Notes[]
+
+  Admin Admin[]
+
+  BannerImages BannerImages[]
 }
 
 model Retailer {
-  id        String      @id @default(uuid())
-  name      String
-  qrCode    String      @unique
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id            Int            @id @default(autoincrement())
+  businessName  String
+  businessOwner String
+  phone         String         @unique
+  gstNumber     String
+  shopMarka     String?
+  transport     String?
+  pincode       String
+  city          String
+  state         String
+  filePath      String?
+  qrCode        String?        @unique
+  sellerId      Int
+  seller        Seller         @relation(fields: [sellerId], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  OrderDetails  OrderDetails[]
 
-  // Foreign Key: Each retailer belongs to one seller
-  sellerId  String
-  seller    Seller      @relation(fields: [sellerId], references: [id])
+  Notes Notes[]
+
+  Admin Admin[]
 }
 
+model Product {
+  id           Int      @id @default(autoincrement())
+  productName  String
+  averagePrice String
+  goodPrice    String
+  highPrice    String
+  description  String?
+  productImage String?
+  sellerId     Int
+  seller       Seller   @relation(fields: [sellerId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  OrderProductDetails OrderProductDetails[]
+}
+
+model OrderDetails {
+  id                  Int                   @id @default(autoincrement())
+  orderId             String                @unique
+  sellerId            Int
+  seller              Seller                @relation(fields: [sellerId], references: [id])
+  retailerId          Int
+  retailer            Retailer              @relation(fields: [retailerId], references: [id])
+  statusId            Int
+  status              Status                @relation(fields: [statusId], references: [id])
+  totalItem           Int
+  totalQuantity       Int
+  notes               String
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  OrderProductDetails OrderProductDetails[]
+  OrderStatusHistory  OrderStatusHistory[]
+
+  ReviewAndRating ReviewAndRating[]
+}
+
+model OrderProductDetails {
+  id        Int          @id @default(autoincrement())
+  orderId   Int
+  order     OrderDetails @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product      @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Int
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model OrderStatusHistory {
+  id        Int          @id @default(autoincrement())
+  orderId   Int
+  order     OrderDetails @relation(fields: [orderId], references: [id])
+  statusId  Int
+  status    Status       @relation(fields: [statusId], references: [id])
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model ReviewAndRating {
+  id          Int          @id @default(autoincrement())
+  orderId     Int
+  order       OrderDetails @relation(fields: [orderId], references: [id])
+  review      String
+  ratingStars Int
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Notes {
+  id         Int      @id @default(autoincrement())
+  sellerId   Int?
+  seller     Seller?   @relation(fields: [sellerId], references: [id])
+  retailerId Int?
+  retailer   Retailer? @relation(fields: [retailerId], references: [id])
+  notes      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Admin {
+  id            Int      @id @default(autoincrement())
+  sellerId      Int
+  seller        Seller   @relation(fields: [sellerId], references: [id])
+  retailerId    Int
+  retailer      Retailer @relation(fields: [retailerId], references: [id])
+  qrCode        String   @unique
+  businessName  String
+  businessOwner String
+  phone         String   @unique
+  gstNumber     String
+  shopMarka     String?
+  transport     String?
+  pincode       String
+  city          String
+  state         String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model BannerImages {
+  id        Int      @id @default(autoincrement())
+  imageLink String
+  sellerId  Int
+  seller    Seller   @relation(fields: [sellerId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

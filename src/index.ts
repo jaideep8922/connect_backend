@@ -5,6 +5,8 @@ import productRoutes from './routes/productRoutes';
 import orderRoutes from './routes/orderRoutes';
 import notesRoutes from './routes/notesRoutes';
 import reviewRoutes from './routes/reviewRoutes';
+import getAllRetailerList from './routes/userList'
+import {  adminLogin, adminRegister } from './controllers/getUserList';
 
 const app = express();
 app.use(express.json());
@@ -15,6 +17,9 @@ app.use('/product', productRoutes);
 app.use('/order', orderRoutes);
 app.use('/notes', notesRoutes);
 app.use('/review', reviewRoutes);
+app.use('/users', getAllRetailerList)
+app.use('/register', adminRegister)
+app.use('/login', adminLogin)
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {

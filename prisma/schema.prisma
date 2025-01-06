@@ -22,6 +22,9 @@ model Status {
   OrderStatusHistory OrderStatusHistory[]
 }
 
+
+
+
 model Seller {
   id            Int            @id @default(autoincrement())
   businessName  String
@@ -43,7 +46,6 @@ model Seller {
 
   Notes Notes[]
 
-  Admin Admin[]
 
   BannerImages BannerImages[]
 }
@@ -69,7 +71,6 @@ model Retailer {
 
   Notes Notes[]
 
-  Admin Admin[]
 }
 
 model Product {
@@ -152,24 +153,15 @@ model Notes {
 }
 
 model Admin {
-  id            Int      @id @default(autoincrement())
-  sellerId      Int
-  seller        Seller   @relation(fields: [sellerId], references: [id])
-  retailerId    Int
-  retailer      Retailer @relation(fields: [retailerId], references: [id])
-  qrCode        String   @unique
-  businessName  String
-  businessOwner String
-  phone         String   @unique
-  gstNumber     String
-  shopMarka     String?
-  transport     String?
-  pincode       String
-  city          String
-  state         String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  phone      String   @unique
+  password   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
+
 
 model BannerImages {
   id        Int      @id @default(autoincrement())

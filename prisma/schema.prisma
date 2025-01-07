@@ -34,18 +34,17 @@ model Seller {
   city          String
   state         String
   filePath      String?
+  dropped       Boolean?       @default(false)
   qrCode        String?        @unique
+  adminId       Int?
+  Admin         Admin?         @relation(fields: [adminId], references: [id])
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   retailers     Retailer[]
   Product       Product[]
   OrderDetails  OrderDetails[]
-
-  Notes Notes[]
-
-  Admin Admin[]
-
-  BannerImages BannerImages[]
+  Notes         Notes[]
+  BannerImages  BannerImages[]
 }
 
 model Retailer {
@@ -60,16 +59,17 @@ model Retailer {
   city          String
   state         String
   filePath      String?
+  dropped       Boolean?       @default(false)
   qrCode        String?        @unique
   sellerId      Int
   seller        Seller         @relation(fields: [sellerId], references: [id])
+  adminId       Int?
+  Admin         Admin?         @relation(fields: [adminId], references: [id])
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   OrderDetails  OrderDetails[]
 
   Notes Notes[]
-
-  Admin Admin[]
 }
 
 model Product {
@@ -152,21 +152,19 @@ model Notes {
 }
 
 model Admin {
-  id         Int      @id @default(autoincrement())
-  sellerId   Int
-  seller     Seller   @relation(fields: [sellerId], references: [id])
-  retailerId Int
-  retailer   Retailer @relation(fields: [retailerId], references: [id])
-  qrCode     String   @unique
-  name       String
-  email      String
-  password   String?
-  phone      String   @unique
-  pincode    String?
-  city       String?
-  state      String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  qrCode    String   @unique
+  name      String
+  email     String
+  password  String?
+  phone     String   @unique
+  pincode   String?
+  city      String?
+  state     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Retailer Retailer[]
+  Seller Seller[]
 }
 
 model BannerImages {

@@ -1,8 +1,6 @@
 import prisma from '../prisma/prismaClient';
+import QRCode from 'qrcode';
 
-// export const getUsers = async () => {
-//   return await prisma.user.findMany();
-// };
 
 export const addUser = async (userData: any) => {
   try {
@@ -19,8 +17,11 @@ export const addUser = async (userData: any) => {
       pincode,
       city,
       state,
-      qrCode,
     } = userData;
+
+          // Generate a unique retailer ID and QR Code
+          const uniqueRetailerId = `r-${new Date().getTime()}`;
+          const qrCode = await QRCode.toDataURL(uniqueRetailerId);
 
     if (userType === 'Retailer') {
       if (!sellerId) {
@@ -48,7 +49,7 @@ export const addUser = async (userData: any) => {
       if (pincode) retailerData.pincode = pincode;
       if (city) retailerData.city = city;
       if (state) retailerData.state = state;
-      if (qrCode) retailerData.qrCode = qrCode;
+      retailerData.qrCode = qrCode;
   
       const retailer = await prisma.retailer.create({
           data: retailerData,
@@ -57,6 +58,9 @@ export const addUser = async (userData: any) => {
       return { message: 'Retailer added successfully', data: retailer };
   }
   
+     // Generate a unique retailer ID and QR Code
+     const uniqueSupplierId = `s-${new Date().getTime()}`;
+     const qrCodeSupplier = await QRCode.toDataURL(uniqueSupplierId);
 
     // Handle Supplier case
     if (userType === 'Supplier') {
@@ -72,7 +76,7 @@ export const addUser = async (userData: any) => {
       if (pincode) supplierData.pincode = pincode;
       if (city) supplierData.city = city;
       if (state) supplierData.state = state;
-      if (qrCode) supplierData.qrCode = qrCode;
+      supplierData.qrCode = qrCodeSupplier;
 
       const supplier = await prisma.seller.create({
         data: supplierData,

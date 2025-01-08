@@ -1,56 +1,49 @@
 
 import { sendSuccess, sendError } from '../utils/responseHandle';
 import { getRetailerAndSellerList, getAllCounts ,getAllProductPagination} from '../services/adminService';
+import { NextFunction, Request, Response } from 'express';
 
-
-export const getAllUsers = async (req: any, res: any) => {
+export const getAllUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const {
-            pageNumber,
-            pageSize,
-            searchValue,
-            userType,
-        } = req.body;
+        const { pageNumber, pageSize, searchValue, userType } = req.body;
 
-        // Validate required fields
         if (!pageNumber || !pageSize) {
-            return sendError(res, 'Page Number and Page Size are required');
+            
+             res.status(400).json({ error: 'Page Number and Page Size are required' });
         }
 
-        // Initialize pagination request object
         const paginationReq = {
             pageNumber: parseInt(pageNumber, 10),
             pageSize: parseInt(pageSize, 10),
-            searchValue: searchValue || '', // Assign default empty string if undefined
-            userType: userType || '',       // Assign default empty string if undefined
+            searchValue: searchValue || '',
+            userType: userType || '',
         };
 
-        // Fetch user list with pagination
         const usersList = await getRetailerAndSellerList(paginationReq);
 
-        // Send successful response
-        sendSuccess(res, usersList, 'Users fetched successfully');
+        res.status(200).json({ success: true, data: usersList, message: 'Users fetched successfully' });
     } catch (error) {
         console.error('Error fetching users:', error);
-        sendError(res, 'Error fetching users');
+        next(error); // Pass the error to the next middleware
     }
 };
 
-export const getDashboardCounts = async (req: any, res: any) => {
+
+export const getDashboardCounts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
 
 
         const countsObj = await getAllCounts();
 
         // Send successful response
-        sendSuccess(res, countsObj, 'Counts fetched successfully');
+        sendSuccess(res, countsObj.data, countsObj.message);
     } catch (error) {
         console.error('Error fetching Counts:', error);
         sendError(res, 'Error fetching Counts');
     }
 };
 
-export const getAllProductList = async (req: any, res: any) => {
+export const getAllProductList = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const {
             pageNumber,
@@ -61,8 +54,8 @@ export const getAllProductList = async (req: any, res: any) => {
 
         // Validate required fields
         if (!pageNumber || !pageSize) {
-            return sendError(res, 'Page Number and Page Size are required');
-        }
+            res.status(400).json({ error: 'Page Number and Page Size are required' });
+       }
 
         // Initialize pagination request object
         const paginationReq = {

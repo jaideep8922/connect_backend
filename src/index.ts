@@ -6,6 +6,7 @@ import orderRoutes from './routes/orderRoutes';
 import notesRoutes from './routes/notesRoutes';
 import reviewRoutes from './routes/reviewRoutes';
 import getAllRetailerList from './routes/userList'
+import adminRoutes  from './routes/adminRoutes'
 import {  adminLogin, adminRegister } from './controllers/getUserList';
 
 const app = express();
@@ -18,6 +19,7 @@ app.use('/order', orderRoutes);
 app.use('/notes', notesRoutes);
 app.use('/review', reviewRoutes);
 app.use('/users', getAllRetailerList)
+app.use('/admin', adminRoutes)
 app.use('/register', adminRegister)
 app.use('/login', adminLogin)
 

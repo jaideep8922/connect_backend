@@ -1,11 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 
-import { getRetailersBySellerId } from '../controllers/getUserList';
+import { getRetailersBySellerId,adminRegister,adminLogin } from '../controllers/getUserList';
 
 const app = express();
 
 app.use(cors());
-app.get('/retailer-list', getRetailersBySellerId);
+app.post('/retailer-list', getRetailersBySellerId);
+app.post('/add-admin', adminRegister);
+app.post('/admin-login', adminLogin);
 
 export default app;

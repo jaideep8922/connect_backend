@@ -5,7 +5,7 @@ import productRoutes from './routes/productRoutes';
 import orderRoutes from './routes/orderRoutes';
 import notesRoutes from './routes/notesRoutes';
 import reviewRoutes from './routes/reviewRoutes';
-import getAllRetailerList from './routes/userList'
+import userList from './routes/userList'
 import adminRoutes  from './routes/adminRoutes'
 import {  adminLogin, adminRegister } from './controllers/getUserList';
 
@@ -18,7 +18,7 @@ app.use('/product', productRoutes);
 app.use('/order', orderRoutes);
 app.use('/notes', notesRoutes);
 app.use('/review', reviewRoutes);
-app.use('/users', getAllRetailerList)
+app.use('/user', userList)
 app.use('/admin', adminRoutes)
 app.use('/register', adminRegister)
 app.use('/login', adminLogin)

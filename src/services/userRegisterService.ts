@@ -1,6 +1,17 @@
 import prisma from '../prisma/prismaClient';
 import QRCode from 'qrcode';
 
+const generateCustomId = (userType: string): string => {
+  const randomNumber = Math.floor(1000 + Math.random() * 9000); 
+  const suffix = userType === "Retailer" ? "RE" : userType === "Supplier" ? "SU" : null;
+
+  if (!suffix) {
+    throw new Error("Invalid userType for customId generation");
+  }
+
+  return `${suffix}-${randomNumber}`; 
+};
+
 
 export const addUser = async (userData: any) => {
   try {
@@ -19,27 +30,32 @@ export const addUser = async (userData: any) => {
       state,
     } = userData;
 
-          // Generate a unique retailer ID and QR Code
-          const uniqueRetailerId = `r-${new Date().getTime()}`;
-          const qrCode = await QRCode.toDataURL(uniqueRetailerId);
+    // Generate a unique retailer ID and QR Code
+    const uniqueRetailerId = `r-${new Date().getTime()}`;
+    const qrCode = await QRCode.toDataURL(uniqueRetailerId);
+
+    const customId = generateCustomId(userType);
+
 
     if (userType === 'Retailer') {
       if (!sellerId) {
-          throw new Error('supplierId is required to map Retailer to a Supplier.');
+        throw new Error('supplierId is required to map Retailer to a Supplier.');
       }
-  
+
       // Check if Supplier exists
       const supplierExists = await prisma.seller.findUnique({
-          where: { id: sellerId },
+        where: { customId: sellerId },
+        
+
       });
-  
+
       if (!supplierExists) {
-          throw new Error(`Supplier with ID ${sellerId} does not exist.`);
+        throw new Error(`Supplier with ID ${sellerId} does not exist.`);
       }
-  
+
       // Create a dynamic retailer data object
       const retailerData: any = { sellerId };
-  
+
       if (businessName) retailerData.businessName = businessName;
       if (businessOwner) retailerData.businessOwner = businessOwner;
       if (phone) retailerData.phone = phone;
@@ -50,17 +66,21 @@ export const addUser = async (userData: any) => {
       if (city) retailerData.city = city;
       if (state) retailerData.state = state;
       retailerData.qrCode = qrCode;
-  
+      retailerData.customId = customId
+
       const retailer = await prisma.retailer.create({
-          data: retailerData,
+        data: retailerData,
+        // include: {
+        //   seller: true, 
+        // },
       });
-  
+
       return { message: 'Retailer added successfully', data: retailer };
-  }
-  
-     // Generate a unique retailer ID and QR Code
-     const uniqueSupplierId = `s-${new Date().getTime()}`;
-     const qrCodeSupplier = await QRCode.toDataURL(uniqueSupplierId);
+    }
+
+    // Generate a unique retailer ID and QR Code
+    const uniqueSupplierId = `s-${new Date().getTime()}`;
+    const qrCodeSupplier = await QRCode.toDataURL(uniqueSupplierId);
 
     // Handle Supplier case
     if (userType === 'Supplier') {
@@ -77,6 +97,7 @@ export const addUser = async (userData: any) => {
       if (city) supplierData.city = city;
       if (state) supplierData.state = state;
       supplierData.qrCode = qrCodeSupplier;
+      supplierData.customId = customId
 
       const supplier = await prisma.seller.create({
         data: supplierData,
@@ -90,10 +111,10 @@ export const addUser = async (userData: any) => {
   }
 };
 
-export const fetchRetailerById = async (id: number) => {
+export const fetchRetailerById = async (customId: string) => {
   try {
     const user = await prisma.retailer.findUnique({
-      where: { id },
+      where: { customId },
     });
     return user;
   } catch (error) {
@@ -102,10 +123,10 @@ export const fetchRetailerById = async (id: number) => {
   }
 };
 
-export const fetchSellerById = async (id: number) => {
+export const fetchSellerById = async (customId: string) => {
   try {
     const user = await prisma.seller.findUnique({
-      where: { id },
+      where: { customId },
     });
     return user;
   } catch (error) {

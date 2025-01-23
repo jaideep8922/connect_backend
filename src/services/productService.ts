@@ -1,8 +1,16 @@
 import prisma from '../prisma/prismaClient';
 
+const generateProductId = (): string => {
+    const randomNumber = Math.floor(1000 + Math.random() * 9000); 
+    const suffix = "PROD"
+    if (!suffix) {
+      throw new Error("Invalid userType for customId generation");
+    }
+    return `${suffix}-${randomNumber}`; 
+  };
+
 export const createProduct = async (productData: any) => {
     try {
-
         const {
             productName,
             averagePrice,
@@ -10,11 +18,15 @@ export const createProduct = async (productData: any) => {
             highPrice,
             description,
             sellerId,
+            productImage
         } = productData;
+
+        const productId :any = generateProductId(); 
 
         // Check if Supplier exists
         const supplierExists = await prisma.seller.findUnique({
-            where: { id: sellerId },
+            where: { customId: sellerId }, // Use customId instead of id
+
         });
 
         if (!supplierExists) {
@@ -23,12 +35,14 @@ export const createProduct = async (productData: any) => {
 
         const product = await prisma.product.create({
             data: {
+                productId,
                 productName,
-                averagePrice,
-                goodPrice,
-                highPrice,
+                averagePrice: averagePrice || null,  
+                goodPrice: goodPrice || null,       
+                highPrice: highPrice || null,        
                 description,
                 sellerId,
+                productImage
             },
         });
 
@@ -42,14 +56,15 @@ export const createProduct = async (productData: any) => {
 
 export const getProductList = async (seller: any) => {
     try {
-
         const {
             sellerId,
         } = seller;
 
         // Check if Supplier exists
         const supplierExists = await prisma.seller.findUnique({
-            where: { id: sellerId },
+            // where: { id: sellerId },
+            where: { customId: sellerId }, // Use customId instead of id
+
         });
 
         if (!supplierExists) {
@@ -71,7 +86,7 @@ export const getProductList = async (seller: any) => {
 export const updateProduct = async (productData: any) => {
     try {
       const {
-        id,
+        productId,
         productName,
         averagePrice,
         goodPrice,
@@ -81,16 +96,16 @@ export const updateProduct = async (productData: any) => {
   
       // Check if the product exists
       const productExists = await prisma.product.findUnique({
-        where: { id: id },
+        where: { productId: productId },
       });
   
       if (!productExists) {
-        throw new Error(`Product with ID ${id} does not exist.`);
+        throw new Error(`Product with ID ${productId} does not exist.`);
       }
   
       // Update the product with the new data
       const updatedData = await prisma.product.update({
-        where: { id: id },  // Specify the product to be updated by its ID
+        where: { productId: productId },  // Specify the product to be updated by its ID
         data: {
           productName,
           averagePrice,

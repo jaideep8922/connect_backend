@@ -14,10 +14,10 @@ export const createNotes = async (notesDetails: any) => {
         }
 
         // Save the notes with the appropriate combination
-        const notesSaveObj = await prisma.notes.create({
+        const notesSaveObj:any = await prisma.notes.create({
             data: {
-                retailerId: retailerId || null,
-                sellerId: sellerId || null,
+                retailerId: retailerId,
+                sellerId: sellerId,
                 notes,
             },
         });
@@ -29,22 +29,54 @@ export const createNotes = async (notesDetails: any) => {
     }
 };
 
+// export const getNotesList = async (notesObj: any) => {
+//     try {
+//         const { customId, userType } = notesObj;
+
+//         let notesList = [];
+
+//         if (userType === 'Retailer') {
+//             notesList = await prisma.notes.findMany({
+//                 where: { retailerId: customId },
+//             });
+//         } else if (userType === 'Supplier') {
+//             notesList = await prisma.notes.findMany({
+//                 where: { sellerId: customId },
+//             });
+//         } else {
+//             throw new Error('Invalid userType. Must be either "Retailer" or "Supplier".');
+//         }
+
+//         return { message: 'Notes retrieved successfully', data: notesList };
+//     } catch (error) {
+//         console.error('Error retrieving Notes from the database:', error);
+//         throw new Error('Failed to retrieve Notes. Please try again.');
+//     }
+// };
+
 export const getNotesList = async (notesObj: any) => {
     try {
-        const { id, userType } = notesObj;
+        const { customId } = notesObj;
+
+        if (!customId) {
+            throw new Error('customId is required.');
+        }
 
         let notesList = [];
+        const prefix = customId.split('-')[0].toUpperCase(); // Extract prefix before the hyphen
 
-        if (userType === 'Retailer') {
+        if (prefix === 'RE') {
+            // Retailer logic
             notesList = await prisma.notes.findMany({
-                where: { retailerId: id },
+                where: { retailerId: customId },
             });
-        } else if (userType === 'Supplier') {
+        } else if (prefix === 'SU') {
+            // Supplier logic
             notesList = await prisma.notes.findMany({
-                where: { sellerId: id },
+                where: { sellerId: customId },
             });
         } else {
-            throw new Error('Invalid userType. Must be either "Retailer" or "Supplier".');
+            throw new Error('Invalid customId prefix. Must start with "RE" (Retailer) or "SE" (Supplier).');
         }
 
         return { message: 'Notes retrieved successfully', data: notesList };
@@ -54,6 +86,7 @@ export const getNotesList = async (notesObj: any) => {
     }
 };
 
+
 export const deleteNotesData = async (notesObj: any) => {
     try {
         const { id } = notesObj;
@@ -62,10 +95,9 @@ export const deleteNotesData = async (notesObj: any) => {
             where: { id }
         });
 
-        return { message: 'Notes retrieved successfully', data: deletedNotesData };
+        return { message: 'Notes deleted successfully', data: deletedNotesData };
     } catch (error) {
         console.error('Error retrieving Notes from the database:', error);
         throw new Error('Failed to retrieve Notes. Please try again.');
     }
 };
-

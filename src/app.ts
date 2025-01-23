@@ -300,7 +300,7 @@ app.get('/api/protected', authenticate, (req:any, res:any) => {
 });
 
 // Start the Server
-const PORT = 3000;
+const PORT = 3005;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

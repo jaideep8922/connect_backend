@@ -8,7 +8,7 @@ app.use(cors());
 
 
 app.post('/add-product', addProduct);
-app.post('/get-product-list', getProductBySellerId);
+app.get('/get-product-list', getProductBySellerId);
 app.put('/update-product', updateProductData);
 app.post('/search-product', serachProductByLowestPrice);
 

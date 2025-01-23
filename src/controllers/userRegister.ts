@@ -1,5 +1,13 @@
+import { PrismaClient } from '@prisma/client';
 import { addUser, fetchRetailerById, fetchSellerById } from '../services/userRegisterService';
 import { sendSuccess, sendError } from '../utils/responseHandle';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = "your_super_secret_key";
+const prisma = new PrismaClient();
+
+// Function to generate custom ID
+
 
 // export const getAllUsers = async (req: any, res: any) => {
 //   try {
@@ -14,21 +22,21 @@ import { sendSuccess, sendError } from '../utils/responseHandle';
 export const getUserById = async (req: any, res: any) => {
   try {
     const { 
-      id,
-      userType,
+      customId,
+      userType
     } = req.body;
 
     // Validation
-    if (!id) {
+    if (!customId) {
       return res.status(400).json({ error: 'Invalid or missing user ID' });
     }
 
-    if (!id || !userType ) {
+    if (!customId  ) {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
 
       if (userType == 'Retailer') {
-        const user = await fetchRetailerById(id);
+        const user = await fetchRetailerById(customId);
 
         if (!user) {
           return res.status(404).json({ error: 'Retailer not found' });
@@ -38,7 +46,7 @@ export const getUserById = async (req: any, res: any) => {
         sendSuccess(res, user, 'Retailer fetched successfully');
       }
       else if (userType == 'Supplier') {
-        const user = await fetchSellerById(id);
+        const user = await fetchSellerById(customId);
 
         if (!user) {
           return res.status(404).json({ error: 'Supplier not found' });
@@ -54,7 +62,6 @@ export const getUserById = async (req: any, res: any) => {
     sendError(res, 'Error fetching user', error);
   }
 };
-
 
 export const onBoardUser = async (req: any, res: any) => {
   try {
@@ -82,8 +89,9 @@ export const onBoardUser = async (req: any, res: any) => {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
 
+
     // Add user logic
-    const newUser = await addUser({
+    const newUser:any = await addUser({
       userType,
       sellerId, // Optional for Supplier but required for Retailer
       businessName,
@@ -96,10 +104,24 @@ export const onBoardUser = async (req: any, res: any) => {
       city,
       state,
       qrCode,
+      
     });
 
+    if (!newUser) {
+      return res.status(500).json({ error: 'Failed to create user.' });
+    }
+
+    const token = jwt.sign(
+      { id: newUser.id, userType: newUser.userType }, 
+      JWT_SECRET,
+      { expiresIn: '9999 years' } //  lifetime validity
+    );
+
+    // Attach token to the response
+    sendSuccess(res, { user: newUser, token }, "User Registered Successfully");
+
     // Success response
-    sendSuccess(res, newUser, "User Registered Successfully");
+    // sendSuccess(res, newUser, "User Registered Successfully");
   } catch (error) {
     console.error('Error onboarding user:', error);
     sendError(res, 'Error onboarding user', error);

@@ -11,9 +11,10 @@ export const addProduct = async (req: any, res: any) => {
             highPrice,
             description,
             sellerId,
+            productImage
         } = req.body;
 
-        if (!productName || !sellerId || !averagePrice || !goodPrice || !highPrice || !description) {
+        if (!productName || !sellerId || !description) {
             return res.status(400).json({ error: 'Missing required fields.' });
         }
 
@@ -25,6 +26,7 @@ export const addProduct = async (req: any, res: any) => {
             highPrice,
             description,
             sellerId,
+            productImage
         });
 
         // Success response
@@ -37,7 +39,7 @@ export const addProduct = async (req: any, res: any) => {
 
 export const getProductBySellerId = async (req: any, res: any) => {
     try {
-        const { sellerId, } = req.body;
+        const { sellerId } = req.query;
 
         if (!sellerId) {
             return res.status(400).json({ error: 'Seller Id Missing.' });
@@ -64,16 +66,16 @@ export const updateProductData = async (req: Request, res: Response): Promise<vo
 
         const updatedProducts = [];
         for (const product of products) {
-            const { id, productName, averagePrice, goodPrice, highPrice, description } = product;
+            const { productId, productName, averagePrice, goodPrice, highPrice, description } = product;
 
-            if (!id) {
+            if (!productId) {
                 res.status(400).json({ error: `Product ID is missing for one of the entries.` });
                 return;
             }
 
             // Update product data
             const updatedData = await updateProduct({
-                id,
+                productId,
                 productName,
                 averagePrice,
                 goodPrice,
@@ -94,7 +96,7 @@ export const updateProductData = async (req: Request, res: Response): Promise<vo
 
 export const serachProductByLowestPrice = async (req: any, res: any) => {
     try {
-        const { productName, } = req.body;
+        const { productName } = req.query;
 
         if (!productName) {
             return res.status(400).json({ error: 'product Name Missing.' });

@@ -10,11 +10,6 @@ export const saveNotesData = async (req: Request, res: Response): Promise<void> 
             notes,
         } = req.body;
 
-        // Validate that either retailerId or sellerId is present
-        // if (!retailerId && !sellerId) {
-        //     return sendError(res, 'Either retailerId or sellerId must be provided.');
-        // }
-
         // Add order logic
         const saveNotesData = await createNotes({
             retailerId,
@@ -34,8 +29,7 @@ export const saveNotesData = async (req: Request, res: Response): Promise<void> 
 export const getNotesData = async (req: Request, res: Response): Promise<void> => {
     try {
         const {
-            id,
-            userType,
+            customId
         } = req.body;
 
         // Validate that either retailerId or sellerId is present
@@ -46,15 +40,14 @@ export const getNotesData = async (req: Request, res: Response): Promise<void> =
 
         // Add order logic
         const getNotesDataList = await getNotesList({
-            id,
-            userType,
+            customId
         });
 
         // Success response
         sendSuccess(res, getNotesDataList.data, getNotesDataList.message);
     } catch (error) {
         console.error('Error Adding Notes:', error);
-        sendError(res, 'An error occurred while adding the Notes.');
+        sendError(res, 'An error occurred while fetching the Notes.');
     }
 };
 

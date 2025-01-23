@@ -15,7 +15,7 @@ datasource db {
 
 model Status {
   id     Int    @id @default(autoincrement())
-  status String
+  status Int
 
   OrderDetails OrderDetails[]
 
@@ -24,6 +24,7 @@ model Status {
 
 model Seller {
   id            Int            @id @default(autoincrement())
+  customId      String   @unique 
   businessName  String
   businessOwner String
   phone         String         @unique
@@ -49,6 +50,7 @@ model Seller {
 
 model Retailer {
   id            Int            @id @default(autoincrement())
+  customId      String   @unique    
   businessName  String
   businessOwner String
   phone         String         @unique
@@ -61,8 +63,8 @@ model Retailer {
   filePath      String?
   dropped       Boolean?       @default(false)
   qrCode        String?        @unique
-  sellerId      Int
-  seller        Seller         @relation(fields: [sellerId], references: [id])
+  sellerId      String?
+  seller        Seller?         @relation(fields: [sellerId], references: [customId])
   adminId       Int?
   Admin         Admin?         @relation(fields: [adminId], references: [id])
   createdAt     DateTime       @default(now())
@@ -74,14 +76,15 @@ model Retailer {
 
 model Product {
   id           Int      @id @default(autoincrement())
+  productId   String   @unique
   productName  String
-  averagePrice String
-  goodPrice    String
-  highPrice    String
+  averagePrice String?
+  goodPrice    String?
+  highPrice    String?
   description  String?
   productImage String?
-  sellerId     Int
-  seller       Seller   @relation(fields: [sellerId], references: [id])
+  sellerId     String
+  seller       Seller   @relation(fields: [sellerId], references: [customId])
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -91,10 +94,10 @@ model Product {
 model OrderDetails {
   id                  Int                   @id @default(autoincrement())
   orderId             String                @unique
-  sellerId            Int
-  seller              Seller                @relation(fields: [sellerId], references: [id])
-  retailerId          Int
-  retailer            Retailer              @relation(fields: [retailerId], references: [id])
+  sellerId            String
+  seller              Seller                @relation(fields: [sellerId], references: [customId])
+  retailerId          String
+  retailer            Retailer              @relation(fields: [retailerId], references: [customId])
   statusId            Int
   status              Status                @relation(fields: [statusId], references: [id])
   totalItem           Int
@@ -106,24 +109,28 @@ model OrderDetails {
   OrderStatusHistory  OrderStatusHistory[]
 
   ReviewAndRating ReviewAndRating[]
+  isCart        Boolean         @default(false)
+
 }
 
 model OrderProductDetails {
   id        Int          @id @default(autoincrement())
-  orderId   Int
-  order     OrderDetails @relation(fields: [orderId], references: [id])
-  productId Int
-  product   Product      @relation(fields: [productId], references: [id])
+  orderId   String
+  order     OrderDetails @relation(fields: [orderId], references: [orderId])
+  productId   String
+  product   Product      @relation(fields: [productId], references: [productId])
   quantity  Int
   price     Int
+
+  
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 }
 
 model OrderStatusHistory {
   id        Int          @id @default(autoincrement())
-  orderId   Int
-  order     OrderDetails @relation(fields: [orderId], references: [id])
+  orderId   String
+  order     OrderDetails @relation(fields: [orderId], references: [orderId])
   statusId  Int
   status    Status       @relation(fields: [statusId], references: [id])
   createdAt DateTime     @default(now())
@@ -132,8 +139,8 @@ model OrderStatusHistory {
 
 model ReviewAndRating {
   id          Int          @id @default(autoincrement())
-  orderId     Int
-  order       OrderDetails @relation(fields: [orderId], references: [id])
+  orderId     String
+  order       OrderDetails @relation(fields: [orderId], references: [orderId])
   review      String
   ratingStars Int
   createdAt   DateTime     @default(now())
@@ -142,10 +149,10 @@ model ReviewAndRating {
 
 model Notes {
   id         Int       @id @default(autoincrement())
-  sellerId   Int?
-  seller     Seller?   @relation(fields: [sellerId], references: [id])
-  retailerId Int?
-  retailer   Retailer? @relation(fields: [retailerId], references: [id])
+  sellerId    String?
+  seller     Seller?   @relation(fields: [sellerId], references: [customId])
+  retailerId String?
+  retailer   Retailer? @relation(fields: [retailerId], references: [customId])
   notes      String
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -169,8 +176,9 @@ model Admin {
 model BannerImages {
   id        Int      @id @default(autoincrement())
   imageLink String
-  sellerId  Int
-  seller    Seller   @relation(fields: [sellerId], references: [id])
+  sellerId  String
+  seller    Seller   @relation(fields: [sellerId], references: [customId])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
 }

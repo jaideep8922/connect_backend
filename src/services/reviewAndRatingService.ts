@@ -30,7 +30,13 @@ export const getReatilersReviewList = async (reviewObj: any) => {
 
         // Fetch reviews with the appropriate condition
         const reviewSaveObj = await prisma.reviewAndRating.findMany({
-            where: { order: { retailerId: retailerId } }
+            where: { order: { retailerId: retailerId } },
+            include: {
+                order: true, 
+            },
+            orderBy: {
+                createdAt: 'desc', 
+            },
         });
 
         return { message: 'Reviews fetched successfully', data: reviewSaveObj };
@@ -46,7 +52,13 @@ export const getSupliersReviewList = async (reviewObj: any) => {
 
         // Fetch reviews with the appropriate condition
         const reviewSaveObj = await prisma.reviewAndRating.findMany({
-            where: { order: { sellerId: sellerId } }
+            where: { order: { sellerId: sellerId } },
+            include: {
+                order: true, 
+            },
+            orderBy: {
+                createdAt: 'desc', 
+            },
         });
 
         return { message: 'Reviews fetched successfully', data: reviewSaveObj };

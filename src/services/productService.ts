@@ -1,58 +1,58 @@
 import prisma from '../prisma/prismaClient';
 
+
 const generateProductId = (): string => {
-    const randomNumber = Math.floor(1000 + Math.random() * 9000); 
-    const suffix = "PROD"
-    if (!suffix) {
-      throw new Error("Invalid userType for customId generation");
-    }
-    return `${suffix}-${randomNumber}`; 
-  };
+  const randomNumber = Math.floor(1000 + Math.random() * 9000); 
+  const suffix = "PROD";
+  return `${suffix}-${randomNumber}`; 
+};
 
 export const createProduct = async (productData: any) => {
-    try {
-        const {
-            productName,
-            averagePrice,
-            goodPrice,
-            highPrice,
-            description,
-            sellerId,
-            productImage
-        } = productData;
+  try {
+    const {
+      productName,
+      averagePrice,
+      goodPrice,
+      highPrice,
+      description,
+      sellerId,
+      productImage,
+      productVideo,
+    } = productData;
 
-        const productId :any = generateProductId(); 
+    const productId = generateProductId(); 
 
-        // Check if Supplier exists
-        const supplierExists = await prisma.seller.findUnique({
-            where: { customId: sellerId }, // Use customId instead of id
+    // Check if Seller exists
+    const supplierExists = await prisma.seller.findUnique({
+      where: { customId: sellerId }, // Use customId to match the seller
+    });
 
-        });
-
-        if (!supplierExists) {
-            throw new Error(`Supplier with ID ${sellerId} does not exist.`);
-        }
-
-        const product = await prisma.product.create({
-            data: {
-                productId,
-                productName,
-                averagePrice: averagePrice || null,  
-                goodPrice: goodPrice || null,       
-                highPrice: highPrice || null,        
-                description,
-                sellerId,
-                productImage
-            },
-        });
-
-        return { message: 'Product added successfully', data: product };
-
-    } catch (error) {
-        console.error('Error adding product to database:', error);
-        throw new Error('Failed to add product');
+    if (!supplierExists) {
+      throw new Error(`Supplier with ID ${sellerId} does not exist.`);
     }
+
+    // Create product in database
+    const product = await prisma.product.create({
+      data: {
+        productId,
+        productName,
+        averagePrice: averagePrice || null,  
+        goodPrice: goodPrice || null,       
+        highPrice: highPrice || null,        
+        description,
+        sellerId,
+        productImage,  // Storing the image URL
+        productVideo,  // Storing the video URL
+      },
+    });
+
+    return { message: 'Product added successfully', data: product };
+  } catch (error) {
+    console.error('Error adding product to database:', error);
+    throw new Error('Failed to add product');
+  }
 };
+
 
 export const getProductList = async (seller: any) => {
     try {

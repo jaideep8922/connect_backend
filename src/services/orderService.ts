@@ -139,6 +139,14 @@ export const getAllOrderByRetailerId = async (retailer: any) => {
         // Check if Retailer exists
         const retailerExists = await prisma.retailer.findUnique({
             where: { customId },
+            // include: {
+            //     OrderDetails: {
+            //       include: {
+            //         OrderProductDetails: true, 
+            //       },
+            //     },
+               
+            //   },
         });
 
         if (!retailerExists) {

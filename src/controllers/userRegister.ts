@@ -4,20 +4,7 @@ import { sendSuccess, sendError } from '../utils/responseHandle';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = "your_super_secret_key";
-const prisma = new PrismaClient();
 
-// Function to generate custom ID
-
-
-// export const getAllUsers = async (req: any, res: any) => {
-//   try {
-//     const users = await getUsers();
-//     sendSuccess(res, users, 'User Fetch Successfully')
-//   } catch (error) {
-//     console.error('Error fetching users:', error);
-//     sendError(res, 'error')
-//   }
-// };
 
 export const getUserById = async (req: any, res: any) => {
   try {

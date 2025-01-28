@@ -46,6 +46,7 @@ model Seller {
   OrderDetails  OrderDetails[]
   Notes         Notes[]
   BannerImages  BannerImages[]
+  Guest Guest[]
 }
 
 model Retailer {
@@ -74,6 +75,18 @@ model Retailer {
   Notes Notes[]
 }
 
+model Guest {
+    id           Int      @id @default(autoincrement())
+ phone         String         @unique
+   customId      String   @unique    
+
+    sellerId      String?
+  seller        Seller?         @relation(fields: [sellerId], references: [customId])
+
+   createdAt     DateTime       @default(now())
+
+}
+
 model Product {
   id           Int      @id @default(autoincrement())
   productId   String   @unique
@@ -83,6 +96,7 @@ model Product {
   highPrice    String?
   description  String?
   productImage String?
+  productVideo String?
   sellerId     String
   seller       Seller   @relation(fields: [sellerId], references: [customId])
   createdAt    DateTime @default(now())

@@ -18,7 +18,8 @@ import prisma from './prisma/prismaClient';
 const app = express();
 
 const corsOptions = {
-  origin: 'http://192.168.0.105:3000', 
+  // origin: 'http://192.168.0.105:3000', 
+  origin:'https://connect-frontend-cpvu.vercel.app/',
   credentials: true, 
 };
 app.use(express.json());

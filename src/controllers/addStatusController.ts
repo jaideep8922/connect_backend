@@ -9,7 +9,7 @@ export const addStatus = async (req: any, res: any) => {
             { id: 1, status: 1 },
             { id: 2, status: 2 },
             { id: 3, status: 3 },
-            { id: 4, status: 4 }
+            { id: 4, status: 4 },
         ];
 
         // Using upsert to create or update statuses

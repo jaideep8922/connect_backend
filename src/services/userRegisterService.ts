@@ -29,6 +29,7 @@ export const addUser = async (userData: any) => {
       pincode,
       city,
       state,
+      filePath
     } = userData;
 
     const customId = generateCustomId(userType);
@@ -63,6 +64,7 @@ export const addUser = async (userData: any) => {
         pincode,
         city,
         state,
+        filePath
       };
 
       const retailer = await prisma.retailer.create({
@@ -88,6 +90,7 @@ export const addUser = async (userData: any) => {
         pincode,
         city,
         state,
+        filePath
       };
 
       const supplier = await prisma.seller.create({

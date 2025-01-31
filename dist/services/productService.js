@@ -40,8 +40,8 @@ const createProduct = (productData) => __awaiter(void 0, void 0, void 0, functio
                 highPrice: highPrice || null,
                 description,
                 sellerId,
-                productImage, // Storing the image URL
-                productVideo, // Storing the video URL
+                productImage,
+                productVideo,
             },
         });
         return { message: 'Product added successfully', data: product };

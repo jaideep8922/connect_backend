@@ -41,8 +41,8 @@ export const createProduct = async (productData: any) => {
         highPrice: highPrice || null,        
         description,
         sellerId,
-        productImage,  // Storing the image URL
-        productVideo,  // Storing the video URL
+        productImage, 
+        productVideo,
       },
     });
 

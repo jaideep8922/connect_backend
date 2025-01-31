@@ -23,10 +23,11 @@ const generateCustomId = (userType) => {
     }
     return `${suffix}-${randomNumber}`;
 };
-const baseUrl = 'http://192.168.0.105:3000/onboard';
+// const baseUrl = 'http://192.168.0.105:3000/onboard';
+const baseUrl = 'https://connect-frontend-cpvu.vercel.app/onboard';
 const addUser = (userData) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { userType, sellerId, businessName, businessOwner, phone, gstNumber, shopMarka, transport, pincode, city, state, } = userData;
+        const { userType, sellerId, businessName, businessOwner, phone, gstNumber, shopMarka, transport, pincode, city, state, filePath } = userData;
         const customId = generateCustomId(userType);
         if (userType === 'Retailer') {
             if (!sellerId) {
@@ -54,6 +55,7 @@ const addUser = (userData) => __awaiter(void 0, void 0, void 0, function* () {
                 pincode,
                 city,
                 state,
+                filePath
             };
             const retailer = yield prismaClient_1.default.retailer.create({
                 data: retailerData,
@@ -75,6 +77,7 @@ const addUser = (userData) => __awaiter(void 0, void 0, void 0, function* () {
                 pincode,
                 city,
                 state,
+                filePath
             };
             const supplier = yield prismaClient_1.default.seller.create({
                 data: supplierData,

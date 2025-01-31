@@ -45,12 +45,23 @@ CREATE TABLE "Retailer" (
     "filePath" TEXT,
     "dropped" BOOLEAN DEFAULT false,
     "qrCode" TEXT,
-    "sellerId" TEXT NOT NULL,
+    "sellerId" TEXT,
     "adminId" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Retailer_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Guest" (
+    "id" SERIAL NOT NULL,
+    "phone" TEXT NOT NULL,
+    "customId" TEXT NOT NULL,
+    "sellerId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Guest_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -63,6 +74,7 @@ CREATE TABLE "Product" (
     "highPrice" TEXT,
     "description" TEXT,
     "productImage" TEXT,
+    "productVideo" TEXT,
     "sellerId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -82,6 +94,7 @@ CREATE TABLE "OrderDetails" (
     "notes" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "isCart" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "OrderDetails_pkey" PRIMARY KEY ("id")
 );
@@ -89,7 +102,7 @@ CREATE TABLE "OrderDetails" (
 -- CreateTable
 CREATE TABLE "OrderProductDetails" (
     "id" SERIAL NOT NULL,
-    "orderId" INTEGER NOT NULL,
+    "orderId" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL,
     "price" INTEGER NOT NULL,
@@ -113,7 +126,7 @@ CREATE TABLE "OrderStatusHistory" (
 -- CreateTable
 CREATE TABLE "ReviewAndRating" (
     "id" SERIAL NOT NULL,
-    "orderId" INTEGER NOT NULL,
+    "orderId" TEXT NOT NULL,
     "review" TEXT NOT NULL,
     "ratingStars" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -154,7 +167,7 @@ CREATE TABLE "Admin" (
 CREATE TABLE "BannerImages" (
     "id" SERIAL NOT NULL,
     "imageLink" TEXT NOT NULL,
-    "sellerId" INTEGER NOT NULL,
+    "sellerId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -180,6 +193,12 @@ CREATE UNIQUE INDEX "Retailer_phone_key" ON "Retailer"("phone");
 CREATE UNIQUE INDEX "Retailer_qrCode_key" ON "Retailer"("qrCode");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Guest_phone_key" ON "Guest"("phone");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Guest_customId_key" ON "Guest"("customId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Product_productId_key" ON "Product"("productId");
 
 -- CreateIndex
@@ -195,10 +214,13 @@ CREATE UNIQUE INDEX "Admin_phone_key" ON "Admin"("phone");
 ALTER TABLE "Seller" ADD CONSTRAINT "Seller_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "Admin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Retailer" ADD CONSTRAINT "Retailer_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "Seller"("customId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Retailer" ADD CONSTRAINT "Retailer_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "Seller"("customId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Retailer" ADD CONSTRAINT "Retailer_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "Admin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Guest" ADD CONSTRAINT "Guest_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "Seller"("customId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Product" ADD CONSTRAINT "Product_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "Seller"("customId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -213,7 +235,7 @@ ALTER TABLE "OrderDetails" ADD CONSTRAINT "OrderDetails_retailerId_fkey" FOREIGN
 ALTER TABLE "OrderDetails" ADD CONSTRAINT "OrderDetails_statusId_fkey" FOREIGN KEY ("statusId") REFERENCES "Status"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "OrderProductDetails" ADD CONSTRAINT "OrderProductDetails_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "OrderDetails"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "OrderProductDetails" ADD CONSTRAINT "OrderProductDetails_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "OrderDetails"("orderId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "OrderProductDetails" ADD CONSTRAINT "OrderProductDetails_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("productId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -225,7 +247,7 @@ ALTER TABLE "OrderStatusHistory" ADD CONSTRAINT "OrderStatusHistory_orderId_fkey
 ALTER TABLE "OrderStatusHistory" ADD CONSTRAINT "OrderStatusHistory_statusId_fkey" FOREIGN KEY ("statusId") REFERENCES "Status"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ReviewAndRating" ADD CONSTRAINT "ReviewAndRating_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "OrderDetails"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ReviewAndRating" ADD CONSTRAINT "ReviewAndRating_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "OrderDetails"("orderId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Notes" ADD CONSTRAINT "Notes_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "Seller"("customId") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -234,4 +256,4 @@ ALTER TABLE "Notes" ADD CONSTRAINT "Notes_sellerId_fkey" FOREIGN KEY ("sellerId"
 ALTER TABLE "Notes" ADD CONSTRAINT "Notes_retailerId_fkey" FOREIGN KEY ("retailerId") REFERENCES "Retailer"("customId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "BannerImages" ADD CONSTRAINT "BannerImages_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "Seller"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "BannerImages" ADD CONSTRAINT "BannerImages_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "Seller"("customId") ON DELETE RESTRICT ON UPDATE CASCADE;

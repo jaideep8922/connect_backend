@@ -12,7 +12,8 @@ const generateCustomId = (userType: string): string => {
   return `${suffix}-${randomNumber}`;
 };
 
-const baseUrl = 'http://192.168.0.105:3000/onboard';
+// const baseUrl = 'http://192.168.0.105:3000/onboard';
+const baseUrl = 'https://connect-frontend-cpvu.vercel.app/onboard'
 
 export const addUser = async (userData: any) => {
   try {

@@ -14,6 +14,8 @@ import multer from 'multer';
 import path from 'path';
 import cors from 'cors'
 import prisma from './prisma/prismaClient';
+import { sendOtpController } from './controllers/otpVerification';
+// import { sendOtpController, verifyOtpController } from './controllers/otpVerification';
 
 const app = express();
 
@@ -56,6 +58,10 @@ app.use('/login', adminLogin)
 app.post('/addStatus', addStatus)
 app.post('/upload-banner', upload.array('images', 5) ,uploadBannerImage)
 app.get('/get-banner-image', getBannerImages)
+
+
+// app.post('/send-otp', sendOtpController);
+// app.post('/verify-otp', verifyOtpController);
 
 
 

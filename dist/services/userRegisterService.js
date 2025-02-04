@@ -23,8 +23,8 @@ const generateCustomId = (userType) => {
     }
     return `${suffix}-${randomNumber}`;
 };
-// const baseUrl = 'http://192.168.0.105:3000/onboard';
-const baseUrl = 'https://connect-frontend-cpvu.vercel.app/onboard';
+const baseUrl = 'http://192.168.0.105:3000/onboard';
+// const baseUrl = 'https://connect-frontend-cpvu.vercel.app/onboard'
 const addUser = (userData) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userType, sellerId, businessName, businessOwner, phone, gstNumber, shopMarka, transport, pincode, city, state, filePath } = userData;
@@ -63,6 +63,7 @@ const addUser = (userData) => __awaiter(void 0, void 0, void 0, function* () {
             return { message: 'Retailer added successfully', data: retailer };
         }
         if (userType === 'Supplier') {
+            const customId = generateCustomId(userType);
             const qrCodeSupplierUrl = `${baseUrl}?id=${customId}`;
             const qrCodeSupplier = yield qrcode_1.default.toDataURL(qrCodeSupplierUrl);
             const supplierData = {

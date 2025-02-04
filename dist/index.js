@@ -28,6 +28,7 @@ const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const cors_1 = __importDefault(require("cors"));
 const prismaClient_1 = __importDefault(require("./prisma/prismaClient"));
+// import { sendOtpController, verifyOtpController } from './controllers/otpVerification';
 const app = (0, express_1.default)();
 const corsOptions = {
     // origin: 'http://192.168.0.105:3000', 
@@ -64,6 +65,8 @@ app.use('/login', getUserList_1.adminLogin);
 app.post('/addStatus', addStatusController_1.addStatus);
 app.post('/upload-banner', upload.array('images', 5), bannerUpload_1.uploadBannerImage);
 app.get('/get-banner-image', bannerUpload_1.getBannerImages);
+// app.post('/send-otp', sendOtpController);
+// app.post('/verify-otp', verifyOtpController);
 app.post("/api/guests/create", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { phone, sellerId } = req.body;
     // Validate phone input

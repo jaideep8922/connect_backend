@@ -97,6 +97,7 @@ export const onBoardUser = async (req: any, res: any) => {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
 
+
     // Handle file upload
     let filePath = '';
     if (req.file) {

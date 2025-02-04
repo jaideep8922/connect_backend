@@ -12,8 +12,8 @@ const generateCustomId = (userType: string): string => {
   return `${suffix}-${randomNumber}`;
 };
 
-// const baseUrl = 'http://192.168.0.105:3000/onboard';
-const baseUrl = 'https://connect-frontend-cpvu.vercel.app/onboard'
+const baseUrl = 'http://192.168.0.105:3000/onboard';
+// const baseUrl = 'https://connect-frontend-cpvu.vercel.app/onboard'
 
 export const addUser = async (userData: any) => {
   try {
@@ -75,6 +75,8 @@ export const addUser = async (userData: any) => {
     }
 
     if (userType === 'Supplier') {
+      const customId = generateCustomId(userType);
+
       const qrCodeSupplierUrl = `${baseUrl}?id=${customId}`;
       const qrCodeSupplier = await QRCode.toDataURL(qrCodeSupplierUrl);
 

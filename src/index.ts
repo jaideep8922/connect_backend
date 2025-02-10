@@ -138,7 +138,7 @@ app.get('/api/retailer/scan/:qrCode', async (req: any, res: any) => {
     // const token = jwt.sign({ id: retailer.id }, JWT_SECRET, { expiresIn: '1d' });
     // res.cookie('token', token, { httpOnly: true });
 
-    // Return retailer details without sensitive data
+    // Return retailer details without sensitive dat
     res.status(200).json({
       id: retailer.id,
       businessName: retailer.businessName,

@@ -28,15 +28,15 @@ const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const cors_1 = __importDefault(require("cors"));
 const prismaClient_1 = __importDefault(require("./prisma/prismaClient"));
+const userRegisterService_1 = require("./services/userRegisterService");
 // import { sendOtpController, verifyOtpController } from './controllers/otpVerification';
 const app = (0, express_1.default)();
 const corsOptions = {
-    // origin: 'http://192.168.0.105:3000', 
+    origin: 'http://192.168.0.105:3000',
     // origin:'https://connect-frontend-cpvu.vercel.app',
-    origin: [
-        'http://192.168.0.105:3000',
-        'https://connect-frontend-cpvu.vercel.app'
-    ],
+    // origin: [
+    //   'http://192.168.0.105:3000',  
+    // ],
     credentials: true,
 };
 app.use(express_1.default.json());
@@ -65,6 +65,10 @@ app.use('/login', getUserList_1.adminLogin);
 app.post('/addStatus', addStatusController_1.addStatus);
 app.post('/upload-banner', upload.array('images', 5), bannerUpload_1.uploadBannerImage);
 app.get('/get-banner-image', bannerUpload_1.getBannerImages);
+app.post('/send-otp', userRegisterService_1.sendOtp);
+app.post('/verify-otp', userRegisterService_1.verifyOtp);
+app.post('/verify-otp-relogin-retailer', userRegisterService_1.verifyOtpForReloginRetailer);
+app.post('/verify-otp-relogin-supplier', userRegisterService_1.verifyOtpForReloginSeller);
 // app.post('/send-otp', sendOtpController);
 // app.post('/verify-otp', verifyOtpController);
 app.post("/api/guests/create", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -122,7 +126,7 @@ app.get('/api/retailer/scan/:qrCode', (req, res) => __awaiter(void 0, void 0, vo
         }
         // const token = jwt.sign({ id: retailer.id }, JWT_SECRET, { expiresIn: '1d' });
         // res.cookie('token', token, { httpOnly: true });
-        // Return retailer details without sensitive data
+        // Return retailer details without sensitive dat
         res.status(200).json({
             id: retailer.id,
             businessName: retailer.businessName,

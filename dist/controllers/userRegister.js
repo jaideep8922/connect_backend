@@ -69,7 +69,7 @@ const uploadImage = (file) => __awaiter(void 0, void 0, void 0, function* () {
 });
 const onBoardUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { userType, sellerId, businessName, businessOwner, phone, gstNumber, shopMarka, transport, pincode, city, state, qrCode, } = req.body;
+        const { userType, sellerId, businessName, businessOwner, phone, gstNumber, shopMarka, transport, pincode, city, state, qrCode, qrCodeSelf } = req.body;
         // Validation for required fields
         if (!userType || !['Retailer', 'Supplier'].includes(userType)) {
             return res.status(400).json({ error: 'Invalid userType. Must be "Retailer" or "Supplier".' });
@@ -98,6 +98,7 @@ const onBoardUser = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             state,
             qrCode,
             filePath,
+            qrCodeSelf
         });
         if (!newUser) {
             return res.status(500).json({ error: 'Failed to create user.' });

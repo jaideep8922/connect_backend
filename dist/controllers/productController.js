@@ -36,7 +36,7 @@ const uploadMedia = (file) => __awaiter(void 0, void 0, void 0, function* () {
 const addProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
-        const { productName, averagePrice, goodPrice, highPrice, description, sellerId, } = req.body;
+        const { productName, averagePrice, goodPrice, highPrice, description, sellerId, tax, moq } = req.body;
         if (!productName || !sellerId || !description) {
             return res.status(400).json({ error: 'Missing required fields.' });
         }
@@ -58,6 +58,8 @@ const addProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             highPrice,
             description,
             sellerId,
+            tax,
+            moq,
             productImage: imageUrl,
             productVideo: videoUrl,
         });

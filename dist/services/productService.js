@@ -21,11 +21,11 @@ const generateProductId = () => {
 };
 const createProduct = (productData) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { productName, averagePrice, goodPrice, highPrice, description, sellerId, productImage, productVideo, } = productData;
+        const { productName, averagePrice, goodPrice, highPrice, description, sellerId, productImage, productVideo, tax, moq } = productData;
         const productId = generateProductId();
         // Check if Seller exists
         const supplierExists = yield prismaClient_1.default.seller.findUnique({
-            where: { customId: sellerId }, // Use customId to match the seller
+            where: { customId: sellerId },
         });
         if (!supplierExists) {
             throw new Error(`Supplier with ID ${sellerId} does not exist.`);
@@ -40,8 +40,10 @@ const createProduct = (productData) => __awaiter(void 0, void 0, void 0, functio
                 highPrice: highPrice || null,
                 description,
                 sellerId,
-                productImage,
+                tax,
+                moq,
                 productVideo,
+                productImage
             },
         });
         return { message: 'Product added successfully', data: product };

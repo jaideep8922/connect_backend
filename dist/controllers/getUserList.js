@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminUserLogin = exports.adminLogin = exports.adminRegister = exports.getRetailersBySellerId = void 0;
+exports.adminUserLogin = exports.adminLogin = exports.adminRegister = exports.updateRetailerDroppedStatus = exports.getRetailersBySellerId = void 0;
 const client_1 = require("@prisma/client");
 const responseHandle_1 = require("../utils/responseHandle");
 const bcrypt_1 = __importDefault(require("bcrypt"));
@@ -41,6 +41,8 @@ const getRetailersBySellerId = (req, res) => __awaiter(void 0, void 0, void 0, f
                 state: true,
                 createdAt: true,
                 updatedAt: true,
+                dropped: true,
+                customId: true
             },
         });
         if (!retailers || retailers.length === 0) {
@@ -54,6 +56,39 @@ const getRetailersBySellerId = (req, res) => __awaiter(void 0, void 0, void 0, f
     }
 });
 exports.getRetailersBySellerId = getRetailersBySellerId;
+const updateRetailerDroppedStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { customId, dropped } = req.body; // Assuming customId and dropped are sent in the body
+        // Validation
+        if (!customId || dropped === undefined) {
+            return res.status(400).json({ error: "Missing customId or dropped value" });
+        }
+        if (typeof dropped !== "boolean") {
+            return res.status(400).json({ error: "Dropped value must be a boolean" });
+        }
+        // Find retailer by customId
+        const retailer = yield prisma.retailer.findUnique({
+            where: { customId },
+        });
+        if (!retailer) {
+            return res.status(404).json({ error: "Retailer not found for the given customId" });
+        }
+        // Update the dropped value
+        const updatedRetailer = yield prisma.retailer.update({
+            where: { customId },
+            data: { dropped },
+        });
+        return res.status(200).json({
+            message: `Retailer's dropped status updated successfully`,
+            retailer: updatedRetailer,
+        });
+    }
+    catch (error) {
+        console.error("Error updating retailer dropped status:", error);
+        return res.status(500).json({ error: "Error updating retailer dropped status" });
+    }
+});
+exports.updateRetailerDroppedStatus = updateRetailerDroppedStatus;
 const adminRegister = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password, name, phone } = req.body;

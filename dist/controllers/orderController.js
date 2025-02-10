@@ -12,59 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateOrderStatus = exports.getOrderStatusHistory = exports.getOrderHistoryBySellerId = exports.getOrderHistoryByRetailerId = exports.createOrder = void 0;
 const responseHandle_1 = require("../utils/responseHandle");
 const orderService_1 = require("../services/orderService");
-// async function createUniqueOrderId(retailerId: string): Promise<string> {
-//     try {
-//         if (!retailerId) {
-//             throw new Error("Retailer ID is missing or invalid.");
-//         }
-//         console.log("Retailer ID:", retailerId);
-//         const retailer = await prisma.retailer.findUnique({
-//             where: { customId: retailerId },
-//             select: { city: true },
-//         });
-//         if (!retailer || !retailer.city) {
-//             throw new Error(`Retailer with ID ${retailerId} does not exist or has no city specified.`);
-//         }
-//         const cityPrefix = retailer.city.slice(0, 3).toUpperCase();
-//         let orderId: string;
-//         do {
-//             const randomNumber = Math.floor(1000 + Math.random() * 9000);
-//             orderId = `${cityPrefix}${randomNumber}`;
-//             const existingOrder = await prisma.orderDetails.findUnique({
-//                 where: { orderId },
-//             });
-//             if (!existingOrder) {
-//                 return orderId;
-//             }
-//         } while (true);
-//     } catch (error) {
-//         console.error("Error generating unique order ID:", error);
-//         throw new Error("Failed to generate a unique order ID.");
-//     }
-// }
-// export const createOrderProductDetails = async (req: any, res: any) => {
-//     if (req.method === 'POST') {
-//         // Generate a unique orderId
-//       const {retailerId, productId, quantity, price } = req.body;
-//       const uniqueOrderId:any = await createUniqueOrderId(retailerId);
-//       console.log("uniqueOrderId", uniqueOrderId)
-//       try {
-//         const newOrderProductDetails = await prisma.orderProductDetails.create({
-//           data: {
-//             orderId:uniqueOrderId,
-//             productId,
-//             quantity,
-//             price,
-//           },
-//         });
-//         res.status(201).json(newOrderProductDetails);
-//       } catch (error) {
-//         res.status(500).json({ error: 'Error creating order product details' });
-//       }
-//     } else {
-//       res.status(405).json({ error: 'Method Not Allowed' });
-//     }
-//   };
 const createOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { retailerId, statusId, totalItem, totalQuantity, notes, sellerId, orderProductDetails, } = req.body;
@@ -206,12 +153,13 @@ const getOrderStatusHistory = (req, res) => __awaiter(void 0, void 0, void 0, fu
 exports.getOrderStatusHistory = getOrderStatusHistory;
 const updateOrderStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { orderId, statusId } = req.body;
+        const { orderId, statusId, filePath } = req.body;
+        console.log("filePathfilePathfilePath", filePath);
         if (!orderId) {
             return res.status(400).json({ error: 'orderId is Missing.' });
         }
         const updatedRecord = yield (0, orderService_1.updateOrderStatusById)({
-            orderId, statusId,
+            orderId, statusId, filePath
         });
         (0, responseHandle_1.sendSuccess)(res, updatedRecord.data, updatedRecord.message);
     }

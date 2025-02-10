@@ -93,7 +93,7 @@ app.put('/update-order-status', upload.single('file'), async (req: any, res: any
       // Upload to Cloudinary only if a file is provided
       if (filePath) {
           const cloudinaryResponse = await cloudinary.v2.uploader.upload(filePath, {
-              folder: 'orders/', // Specify a folder in Cloudinary
+              folder: 'orders/', // Specify a folder in Cloud
               resource_type: 'auto',
           });
 

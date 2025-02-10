@@ -32,8 +32,8 @@ const userRegisterService_1 = require("./services/userRegisterService");
 // import { sendOtpController, verifyOtpController } from './controllers/otpVerification';
 const app = (0, express_1.default)();
 const corsOptions = {
-    origin: 'http://192.168.0.105:3000',
-    // origin:'https://connect-frontend-cpvu.vercel.app',
+    // origin: 'http://192.168.0.105:3000', 
+    origin: 'https://connect-frontend-iu5s.vercel.app',
     // origin: [
     //   'http://192.168.0.105:3000',  
     // ],

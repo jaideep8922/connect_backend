@@ -121,7 +121,11 @@ export const verifyOtpForReloginSeller = async (req: any, res: any) => {
     console.log("verify-otp-relogin", token);
     const userId = user.customId
 
-    res.status(200).json({ user: user, token });
+    res.status(200).json({
+      message: "OTP verified successfully", 
+      data: user,
+      token: token,
+    });
 
     // res.status(200).json({
     //   message: "OTP verified successfully",
@@ -136,55 +140,126 @@ export const verifyOtpForReloginSeller = async (req: any, res: any) => {
   }
 };
 
-export const verifyOtpForReloginRetailer= async (req: any, res: any) => {
+
+export const verifyOtpForReloginRetailer = async (req: any, res: any) => {
   try {
     const { phone, otp } = req.body;
 
+    // Check if phone and OTP are provided
     if (!phone || !otp) {
       return res.status(400).json({ message: "Phone and OTP are required" });
     }
 
+    // Retrieve the stored OTP for the phone number
     const storedOtpData = otpStorage.get(phone);
 
+    // Check if OTP exists for the provided phone number
     if (!storedOtpData) {
       return res.status(400).json({ message: "OTP not found. Request a new one." });
     }
 
+    // Check if OTP has expired
     if (Date.now() > storedOtpData.expiresAt) {
       otpStorage.delete(phone); // Remove expired OTP
       return res.status(400).json({ message: "OTP expired. Request a new one." });
     }
 
+    // Validate OTP
     if (storedOtpData.otp !== otp) {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    // OTP verified, delete from storage
+    // OTP is verified, remove it from storage
     otpStorage.delete(phone);
 
-    // Check if the phone exists in the Retailer model
+    // Remove country code if present
+    const phoneWithoutCountryCode = phone.replace(/^(\+91)/, '');
+
+    // Find the user in the Retailer model
     let user = await prisma.retailer.findUnique({
-      where: { phone },
+      where: { phone: phoneWithoutCountryCode },
     });
 
-
+    // If user is not found
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Generate JWT after successful OTP verification
+    // Generate JWT token
     const token = generateJWT(user.id, user.phone, user.customId);
-    console.log("verify-otp-relogin", token);
 
+    // Respond with user, token, and message
     res.status(200).json({
-      message: "OTP verified successfully",
-      token,
+      message: "OTP verified successfully", // Include message in the response
+      data: user,
+      token: token,
     });
+
   } catch (error) {
+    // Log error and send failure response
     console.error("Error verifying OTP for relogin:", error);
     res.status(500).json({ message: "Failed to verify OTP" });
   }
 };
+
+
+// export const verifyOtpForReloginRetailer= async (req: any, res: any) => {
+//   try {
+//     const { phone, otp } = req.body;
+
+//     if (!phone || !otp) {
+//       return res.status(400).json({ message: "Phone and OTP are required" });
+//     }
+
+//     const storedOtpData = otpStorage.get(phone);
+
+//     if (!storedOtpData) {
+//       return res.status(400).json({ message: "OTP not found. Request a new one." });
+//     }
+
+//     if (Date.now() > storedOtpData.expiresAt) {
+//       otpStorage.delete(phone); // Remove expired OTP
+//       return res.status(400).json({ message: "OTP expired. Request a new one." });
+//     }
+
+//     if (storedOtpData.otp !== otp) {
+//       return res.status(400).json({ message: "Invalid OTP" });
+//     }
+
+//     // OTP verified, delete from storage
+//     otpStorage.delete(phone);
+
+//     otpStorage.delete(phone);
+//     const phoneWithoutCountryCode = phone.replace(/^(\+91)/, '');
+
+//     // Check if the phone exists in the Retailer model
+//     let user = await prisma.retailer.findUnique({
+//       where: { phone:phoneWithoutCountryCode },
+//     });
+
+//     console.log("user", user)
+
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     // Generate JWT after successful OTP verification
+//     const token = generateJWT(user.id, user.phone, user.customId);
+//     console.log("verify-otp-relogin", token);
+
+//     res.status(200).json({ user: user, token });
+
+
+//     // res.status(200).json({
+//     //   message: "OTP verified successfully",
+//     //   token,
+//     // });
+//   } catch (error) {
+//     console.error("Error verifying OTP for relogin:", error);
+//     res.status(500).json({ message: "Failed to verify OTP" });
+//   }
+// };
 
 
 
@@ -268,7 +343,7 @@ export const addUser = async (userData: any) => {
       const qrCodeSupplier = await QRCode.toDataURL(qrCodeSupplierUrl);
 
       // const qrCodeSupplierSelfUrl = `${baseUrl}?type=supplier&supplierId=${sellerId}`;
-      const qrCodeSupplierSelfUrl = `${baseUrl}?type=supplier&customId=${customId}&timestamp=${Date.now()}`;
+      const qrCodeSupplierSelfUrl = `${baseUrl}?type=supplier&id=${customId}&timestamp=${Date.now()}`;
 
       const qrCodeSelfSupplier = await QRCode.toDataURL(qrCodeSupplierSelfUrl);
 

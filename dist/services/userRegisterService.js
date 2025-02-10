@@ -105,7 +105,11 @@ const verifyOtpForReloginSeller = (req, res) => __awaiter(void 0, void 0, void 0
         const token = generateJWT(user.id, user.phone, user.customId);
         console.log("verify-otp-relogin", token);
         const userId = user.customId;
-        res.status(200).json({ user: user, token });
+        res.status(200).json({
+            message: "OTP verified successfully",
+            data: user,
+            token: token,
+        });
         // res.status(200).json({
         //   message: "OTP verified successfully",
         //   token,
@@ -123,43 +127,95 @@ exports.verifyOtpForReloginSeller = verifyOtpForReloginSeller;
 const verifyOtpForReloginRetailer = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { phone, otp } = req.body;
+        // Check if phone and OTP are provided
         if (!phone || !otp) {
             return res.status(400).json({ message: "Phone and OTP are required" });
         }
+        // Retrieve the stored OTP for the phone number
         const storedOtpData = otpStorage.get(phone);
+        // Check if OTP exists for the provided phone number
         if (!storedOtpData) {
             return res.status(400).json({ message: "OTP not found. Request a new one." });
         }
+        // Check if OTP has expired
         if (Date.now() > storedOtpData.expiresAt) {
             otpStorage.delete(phone); // Remove expired OTP
             return res.status(400).json({ message: "OTP expired. Request a new one." });
         }
+        // Validate OTP
         if (storedOtpData.otp !== otp) {
             return res.status(400).json({ message: "Invalid OTP" });
         }
-        // OTP verified, delete from storage
+        // OTP is verified, remove it from storage
         otpStorage.delete(phone);
-        // Check if the phone exists in the Retailer model
+        // Remove country code if present
+        const phoneWithoutCountryCode = phone.replace(/^(\+91)/, '');
+        // Find the user in the Retailer model
         let user = yield prismaClient_1.default.retailer.findUnique({
-            where: { phone },
+            where: { phone: phoneWithoutCountryCode },
         });
+        // If user is not found
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        // Generate JWT after successful OTP verification
+        // Generate JWT token
         const token = generateJWT(user.id, user.phone, user.customId);
-        console.log("verify-otp-relogin", token);
+        // Respond with user, token, and message
         res.status(200).json({
-            message: "OTP verified successfully",
-            token,
+            message: "OTP verified successfully", // Include message in the response
+            data: user,
+            token: token,
         });
     }
     catch (error) {
+        // Log error and send failure response
         console.error("Error verifying OTP for relogin:", error);
         res.status(500).json({ message: "Failed to verify OTP" });
     }
 });
 exports.verifyOtpForReloginRetailer = verifyOtpForReloginRetailer;
+// export const verifyOtpForReloginRetailer= async (req: any, res: any) => {
+//   try {
+//     const { phone, otp } = req.body;
+//     if (!phone || !otp) {
+//       return res.status(400).json({ message: "Phone and OTP are required" });
+//     }
+//     const storedOtpData = otpStorage.get(phone);
+//     if (!storedOtpData) {
+//       return res.status(400).json({ message: "OTP not found. Request a new one." });
+//     }
+//     if (Date.now() > storedOtpData.expiresAt) {
+//       otpStorage.delete(phone); // Remove expired OTP
+//       return res.status(400).json({ message: "OTP expired. Request a new one." });
+//     }
+//     if (storedOtpData.otp !== otp) {
+//       return res.status(400).json({ message: "Invalid OTP" });
+//     }
+//     // OTP verified, delete from storage
+//     otpStorage.delete(phone);
+//     otpStorage.delete(phone);
+//     const phoneWithoutCountryCode = phone.replace(/^(\+91)/, '');
+//     // Check if the phone exists in the Retailer model
+//     let user = await prisma.retailer.findUnique({
+//       where: { phone:phoneWithoutCountryCode },
+//     });
+//     console.log("user", user)
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+//     // Generate JWT after successful OTP verification
+//     const token = generateJWT(user.id, user.phone, user.customId);
+//     console.log("verify-otp-relogin", token);
+//     res.status(200).json({ user: user, token });
+//     // res.status(200).json({
+//     //   message: "OTP verified successfully",
+//     //   token,
+//     // });
+//   } catch (error) {
+//     console.error("Error verifying OTP for relogin:", error);
+//     res.status(500).json({ message: "Failed to verify OTP" });
+//   }
+// };
 const generateCustomId = (userType) => {
     const randomNumber = Math.floor(1000 + Math.random() * 9000);
     const suffix = userType === "Retailer" ? "RE" : userType === "Supplier" ? "SU" : null;
@@ -168,8 +224,8 @@ const generateCustomId = (userType) => {
     }
     return `${suffix}-${randomNumber}`;
 };
-const baseUrl = 'http://192.168.0.105:3000/onboard';
-// const baseUrl = 'https://connect-frontend-cpvu.vercel.app/onboard'
+// const baseUrl = 'http://192.168.0.105:3000/onboard';
+const baseUrl = 'https://connect-frontend-iu5s.vercel.app/';
 const addUser = (userData) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userType, sellerId, businessName, businessOwner, phone, gstNumber, shopMarka, transport, pincode, city, state, filePath, qrCodeSelf } = userData;
@@ -211,7 +267,7 @@ const addUser = (userData) => __awaiter(void 0, void 0, void 0, function* () {
             const qrCodeSupplierUrl = `${baseUrl}?id=${customId}`;
             const qrCodeSupplier = yield qrcode_1.default.toDataURL(qrCodeSupplierUrl);
             // const qrCodeSupplierSelfUrl = `${baseUrl}?type=supplier&supplierId=${sellerId}`;
-            const qrCodeSupplierSelfUrl = `${baseUrl}?type=supplier&customId=${customId}&timestamp=${Date.now()}`;
+            const qrCodeSupplierSelfUrl = `${baseUrl}?type=supplier&id=${customId}&timestamp=${Date.now()}`;
             const qrCodeSelfSupplier = yield qrcode_1.default.toDataURL(qrCodeSupplierSelfUrl);
             console.log("qrCodeSupplier", qrCodeSupplier);
             console.log("qrCodeSelfSupplier", qrCodeSelfSupplier);

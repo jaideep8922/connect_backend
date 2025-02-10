@@ -30,6 +30,8 @@ export const getRetailersBySellerId = async (req: any, res: any) => {
         state: true,
         createdAt: true,
         updatedAt: true,
+        dropped:true,
+        customId:true
       },
     });
     if (!retailers || retailers.length === 0) {
@@ -41,6 +43,45 @@ export const getRetailersBySellerId = async (req: any, res: any) => {
     return res.status(500).json({ error: "Error fetching retailers" });
   }
 };
+
+export const updateRetailerDroppedStatus = async (req: any, res: any) => {
+  try {
+    const { customId, dropped } = req.body; // Assuming customId and dropped are sent in the body
+
+    // Validation
+    if (!customId || dropped === undefined) {
+      return res.status(400).json({ error: "Missing customId or dropped value" });
+    }
+
+    if (typeof dropped !== "boolean") {
+      return res.status(400).json({ error: "Dropped value must be a boolean" });
+    }
+
+    // Find retailer by customId
+    const retailer = await prisma.retailer.findUnique({
+      where: { customId },
+    });
+
+    if (!retailer) {
+      return res.status(404).json({ error: "Retailer not found for the given customId" });
+    }
+
+    // Update the dropped value
+    const updatedRetailer = await prisma.retailer.update({
+      where: { customId },
+      data: { dropped },
+    });
+
+    return res.status(200).json({
+      message: `Retailer's dropped status updated successfully`,
+      retailer: updatedRetailer,
+    });
+  } catch (error) {
+    console.error("Error updating retailer dropped status:", error);
+    return res.status(500).json({ error: "Error updating retailer dropped status" });
+  }
+};
+
 
 export const adminRegister = async (req: any, res: any) => {
   try {

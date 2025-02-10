@@ -15,17 +15,17 @@ import path from 'path';
 import cors from 'cors'
 import prisma from './prisma/prismaClient';
 import { sendOtpController } from './controllers/otpVerification';
+import { sendOtp, verifyOtp,  verifyOtpForReloginRetailer, verifyOtpForReloginSeller } from './services/userRegisterService';
 // import { sendOtpController, verifyOtpController } from './controllers/otpVerification';
 
 const app = express();
 
 const corsOptions = {
-  // origin: 'http://192.168.0.105:3000', 
+  origin: 'http://192.168.0.105:3000', 
   // origin:'https://connect-frontend-cpvu.vercel.app',
-  origin: [
-    'http://192.168.0.105:3000',  
-    'https://connect-frontend-cpvu.vercel.app'  
-  ],
+  // origin: [
+  //   'http://192.168.0.105:3000',  
+  // ],
   credentials: true, 
 };
 app.use(express.json());
@@ -58,6 +58,12 @@ app.use('/login', adminLogin)
 app.post('/addStatus', addStatus)
 app.post('/upload-banner', upload.array('images', 5) ,uploadBannerImage)
 app.get('/get-banner-image', getBannerImages)
+app.post('/send-otp', sendOtp)
+app.post('/verify-otp', verifyOtp)
+app.post('/verify-otp-relogin-retailer', verifyOtpForReloginRetailer)
+app.post('/verify-otp-relogin-supplier', verifyOtpForReloginSeller)
+
+
 
 
 // app.post('/send-otp', sendOtpController);

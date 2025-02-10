@@ -20,9 +20,10 @@ const upload = multer({
   },
 });
 
-app.post('/add-product', upload.fields([{ name: 'productImage' }, { name: 'productVideo' }]), addProduct); // Supports both image and video
+app.post('/add-product', upload.fields([{ name: 'productImage' }, { name: 'productVideo' }]), addProduct); 
 app.get('/get-product-list', getProductBySellerId);
 app.put('/update-product', updateProductData);
+
 app.get('/search-product', serachProductByLowestPrice);
 
 export default app;

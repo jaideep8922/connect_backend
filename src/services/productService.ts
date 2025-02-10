@@ -18,13 +18,15 @@ export const createProduct = async (productData: any) => {
       sellerId,
       productImage,
       productVideo,
+      tax,
+      moq
     } = productData;
 
     const productId = generateProductId(); 
 
     // Check if Seller exists
     const supplierExists = await prisma.seller.findUnique({
-      where: { customId: sellerId }, // Use customId to match the seller
+      where: { customId: sellerId }, 
     });
 
     if (!supplierExists) {
@@ -41,8 +43,10 @@ export const createProduct = async (productData: any) => {
         highPrice: highPrice || null,        
         description,
         sellerId,
-        productImage, 
+        tax,
+        moq,
         productVideo,
+        productImage
       },
     });
 

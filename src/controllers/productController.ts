@@ -39,6 +39,8 @@ export const addProduct = async (req: any, res: any) => {
       highPrice,
       description,
       sellerId,
+      tax,
+      moq
     } = req.body;
 
     if (!productName || !sellerId || !description) {
@@ -65,6 +67,8 @@ export const addProduct = async (req: any, res: any) => {
       highPrice,
       description,
       sellerId,
+      tax,
+      moq,
       productImage: imageUrl, 
       productVideo: videoUrl, 
     });

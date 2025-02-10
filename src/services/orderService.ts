@@ -166,6 +166,13 @@ export const getAllOrderByRetailerId = async (retailer: any) => {
                 retailerId: customId, 
                 ...(statusId && { statusId }),
             },
+            include: {
+                OrderProductDetails : {
+                    include: {
+                        product: true, 
+                    },
+                }
+            },
         });
         
 
@@ -276,12 +283,17 @@ export const getOrderStatusHistoryList = async (order: any) => {
 
 export const updateOrderStatusById = async (order: any) => {
     try {
+        const { orderId, statusId, filePath } = order;
 
-        const {
-            orderId, statusId,
-        } = order;
-        
+        console.log("filePathfilePath",filePath)
 
+        // Ensure statusId is an integer
+        const parsedStatusId = parseInt(statusId, 10);
+
+        // Check if parsedStatusId is a valid integer
+        if (isNaN(parsedStatusId)) {
+            throw new Error('Invalid statusId value');
+        }
 
         const checkExistOrNot = await prisma.orderDetails.findUnique({
             where: { orderId },
@@ -289,20 +301,22 @@ export const updateOrderStatusById = async (order: any) => {
 
         if (!checkExistOrNot) {
             throw new Error(`Order with ID ${orderId} does not exist.`);
-
         }
 
+        // Update the order status
         const updatedData = await prisma.orderDetails.update({
-            where: { orderId },  // Specify the product to be updated by its ID
+            where: { orderId },
             data: {
-                statusId,
+                statusId: parsedStatusId, // Pass parsed integer value
+                filePath,
             },
         });
 
+        // Create a new entry in orderStatusHistory
         await prisma.orderStatusHistory.create({
             data: {
                 orderId,
-                statusId,
+                statusId: parsedStatusId, 
             },
         });
 
@@ -313,6 +327,48 @@ export const updateOrderStatusById = async (order: any) => {
         throw new Error('Failed to Updating Order Status');
     }
 };
+
+
+// export const updateOrderStatusById = async (order: any) => {
+//     try {
+
+//         const {
+//             orderId, statusId,filePath
+//         } = order;
+        
+
+//         const checkExistOrNot = await prisma.orderDetails.findUnique({
+//             where: { orderId },
+//         });
+
+//         if (!checkExistOrNot) {
+//             throw new Error(`Order with ID ${orderId} does not exist.`);
+
+//         }
+
+//         const updatedData = await prisma.orderDetails.update({
+//             where: { orderId },  
+//             data: {
+//                 statusId,
+//                 filePath
+//             },
+//         });
+
+//         await prisma.orderStatusHistory.create({
+//             data: {
+//                 orderId,
+//                 statusId,
+                
+//             },
+//         });
+
+//         return { message: 'Update Order Status successfully', data: updatedData };
+
+//     } catch (error) {
+//         console.error('Error Updating Order Status:', error);
+//         throw new Error('Failed to Updating Order Status');
+//     }
+// };
 
 
 

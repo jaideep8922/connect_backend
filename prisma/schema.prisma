@@ -37,6 +37,7 @@ model Seller {
   filePath      String?
   dropped       Boolean?       @default(false)
   qrCode        String?        @unique
+  qrCodeSelf        String?        @unique
   adminId       Int?
   Admin         Admin?         @relation(fields: [adminId], references: [id])
   createdAt     DateTime       @default(now())
@@ -76,14 +77,12 @@ model Retailer {
 }
 
 model Guest {
-    id           Int      @id @default(autoincrement())
+ id           Int      @id @default(autoincrement())
  phone         String         @unique
-   customId      String   @unique    
-
-    sellerId      String?
-  seller        Seller?         @relation(fields: [sellerId], references: [customId])
-
-   createdAt     DateTime       @default(now())
+ customId      String   @unique    
+ sellerId      String?
+ seller        Seller?         @relation(fields: [sellerId], references: [customId])
+ createdAt     DateTime       @default(now())
 
 }
 
@@ -97,6 +96,8 @@ model Product {
   description  String?
   productImage String?
   productVideo String?
+  tax          String?
+  moq          String?
   sellerId     String
   seller       Seller   @relation(fields: [sellerId], references: [customId])
   createdAt    DateTime @default(now())
@@ -117,6 +118,8 @@ model OrderDetails {
   totalItem           Int
   totalQuantity       Int
   notes               String
+  filePath            String?
+
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
   OrderProductDetails OrderProductDetails[]

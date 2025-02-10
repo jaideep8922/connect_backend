@@ -86,6 +86,7 @@ export const onBoardUser = async (req: any, res: any) => {
       city,
       state,
       qrCode,
+      qrCodeSelf
     } = req.body;
 
     // Validation for required fields
@@ -121,6 +122,7 @@ export const onBoardUser = async (req: any, res: any) => {
       state,
       qrCode,
       filePath,
+      qrCodeSelf
     });
 
     if (!newUser) {

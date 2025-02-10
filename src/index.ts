@@ -21,8 +21,8 @@ import { sendOtp, verifyOtp,  verifyOtpForReloginRetailer, verifyOtpForReloginSe
 const app = express();
 
 const corsOptions = {
-  origin: 'http://192.168.0.105:3000', 
-  // origin:'https://connect-frontend-cpvu.vercel.app',
+  // origin: 'http://192.168.0.105:3000', 
+  origin:'https://connect-frontend-iu5s-git-main-jaideeps-projects-8e71adbe.vercel.app/',
   // origin: [
   //   'http://192.168.0.105:3000',  
   // ],

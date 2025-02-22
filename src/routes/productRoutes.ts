@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
 import path from 'path';
-import { addProduct, getProductBySellerId, updateProductData, serachProductByLowestPrice } from '../controllers/productController';
+import { addProduct, getProductBySellerId, updateProductData, serachProductByLowestPrice, serachProductByLowestPricebyAdmin, getProductByAdminId } from '../controllers/productController';
 
 const app = express();
 app.use(cors());
@@ -22,8 +22,14 @@ const upload = multer({
 
 app.post('/add-product', upload.fields([{ name: 'productImage' }, { name: 'productVideo' }]), addProduct); 
 app.get('/get-product-list', getProductBySellerId);
+app.get('/get-product-list-by-admin', getProductByAdminId);
+
+
 app.put('/update-product', updateProductData);
 
 app.get('/search-product', serachProductByLowestPrice);
+app.get('/search-product-by-admin', serachProductByLowestPricebyAdmin);
+
+
 
 export default app;

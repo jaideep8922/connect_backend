@@ -1,5 +1,5 @@
 import { sendSuccess, sendError } from '../utils/responseHandle';
-import { createProduct, getProductList, updateProduct ,getLowestPriceProductList } from '../services/productService';
+import { createProduct, getProductList, updateProduct ,getLowestPriceProductList, getLowestPriceProductListbyAdmin, getProductListbyAdmin } from '../services/productService';
 import { Request, Response } from 'express';
 
 import cloudinary from 'cloudinary';
@@ -98,6 +98,27 @@ export const getProductBySellerId = async (req: any, res: any) => {
     }
 };
 
+export const getProductByAdminId = async (req: any, res: any) => {
+  try {
+      const { adminId } = req.query;
+
+      if (!adminId) {
+          return res.status(400).json({ error: 'Seller Id Missing.' });
+      }
+
+      const productList = await getProductListbyAdmin({
+          adminId,
+      });
+      sendSuccess(res, productList.data, productList.message)
+  } catch (error) {
+      console.error('Error fetching Product List:', error);
+      sendError(res, 'Error fetching Product List:')
+  }
+};
+
+
+
+
 export const updateProductData = async (req: Request, res: Response): Promise<void> => {
     try {
         const products = req.body; // Expecting an array of product objects
@@ -139,7 +160,7 @@ export const updateProductData = async (req: Request, res: Response): Promise<vo
 
 export const serachProductByLowestPrice = async (req: any, res: any) => {
     try {
-        const { productName } = req.query;
+        const { productName, sellerId } = req.query;
 
         if (!productName) {
             return res.status(400).json({ error: 'product Name Missing.' });
@@ -154,3 +175,25 @@ export const serachProductByLowestPrice = async (req: any, res: any) => {
         sendError(res, 'Error fetching Product List:')
     }
 };
+
+export const serachProductByLowestPricebyAdmin = async (req: any, res: any) => {
+  try {
+      const { productName, adminId } = req.query;
+
+      if (!productName) {
+          return res.status(400).json({ error: 'product Name Missing.' });
+      }
+
+      const productList = await getLowestPriceProductListbyAdmin({
+          productName,
+          adminId
+      });
+      sendSuccess(res, productList.data, productList.message)
+  } catch (error) {
+      console.error('Error fetching Product List:', error);
+      sendError(res, 'Error fetching Product List:')
+  }
+};
+
+
+

@@ -6,8 +6,8 @@ import orderRoutes from './routes/orderRoutes';
 import notesRoutes from './routes/notesRoutes';
 import reviewRoutes from './routes/reviewRoutes';
 import userList from './routes/userList'
-import adminRoutes  from './routes/adminRoutes'
-import {  adminLogin, adminRegister } from './controllers/getUserList';
+import adminRoutes from './routes/adminRoutes'
+import { adminLogin, adminRegister } from './controllers/getUserList';
 import { addStatus } from './controllers/addStatusController';
 import { getBannerImages, uploadBannerImage } from './controllers/bannerUpload';
 import multer from 'multer';
@@ -15,18 +15,20 @@ import path from 'path';
 import cors from 'cors'
 import prisma from './prisma/prismaClient';
 import { sendOtpController } from './controllers/otpVerification';
-import { sendOtp, verifyOtp,  verifyOtpForReloginRetailer, verifyOtpForReloginSeller } from './services/userRegisterService';
+import { sendOtp, verifyOtp, verifyOtpForReloginRetailer, verifyOtpForReloginSeller } from './services/userRegisterService';
 // import { sendOtpController, verifyOtpController } from './controllers/otpVerification';
+import QRCode from 'qrcode';
+
 
 const app = express();
 
 const corsOptions = {
-  // origin: 'http://192.168.0.105:3000', 
+  // origin: ['http://192.168.0.105:3000','http://192.168.0.105:3001'],
   origin:'https://connect-frontend-iu5s.vercel.app',
   // origin: [
   //   'http://192.168.0.105:3000',  
   // ],
-  credentials: true, 
+  credentials: true,
 };
 app.use(express.json());
 
@@ -56,7 +58,7 @@ app.use('/admin', adminRoutes)
 app.use('/register', adminRegister)
 app.use('/login', adminLogin)
 app.post('/addStatus', addStatus)
-app.post('/upload-banner', upload.array('images', 5) ,uploadBannerImage)
+app.post('/upload-banner', upload.array('images', 5), uploadBannerImage)
 app.get('/get-banner-image', getBannerImages)
 app.post('/send-otp', sendOtp)
 app.post('/verify-otp', verifyOtp)
@@ -64,16 +66,176 @@ app.post('/verify-otp-relogin-retailer', verifyOtpForReloginRetailer)
 app.post('/verify-otp-relogin-supplier', verifyOtpForReloginSeller)
 
 
+app.get("/api/products", async (req:any, res:any) => {
+  try {
+    const { productName } = req.query;
+
+    if (!productName) {
+      return res.status(400).json({ error: "Product name is required" });
+    }
+
+    const product = await prisma.product.findMany({
+      where: {
+        productName: {
+          contains: productName, // Partial search
+          mode: "insensitive", // Case insensitive
+        },
+      },
+      include: {
+        seller: true, // Include seller details if needed
+      },
+    });
+
+    if (!product.length) {
+      return res.status(404).json({ message: "No products found" });
+    }
+
+    res.json(product);
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 
-// app.post('/send-otp', sendOtpController);
-// app.post('/verify-otp', verifyOtpController);
+app.post('/generate-notification', async (req:any, res:any) => {
+  const { message } = req.body; 
+
+  if (!message) {
+    return res.status(400).json({ error: "Message is required" });
+  }
+
+  try {
+    const notification = await prisma.notification.create({
+      data: {
+        message, 
+      },
+    });
+
+    return res.status(201).json({ success: true, notification });
+  } catch (error) {
+    console.error("Error creating notification:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.get('/get-all-notification', async(req:any, res:any)=>{
+  try {
+    const notification = await prisma.notification.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    return res.status(200).json({ success: true, notification });
+  } catch (error) {
+    console.error("Error creating notification:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+})
 
 
 
+// const baseUrl = 'http://192.168.0.105:3000/onboard';
+const baseUrl = 'https://connect-frontend-iu5s.vercel.app/'
 
-app.post("/api/guests/create", async (req:any, res:any) => {
-  const { phone , sellerId} = req.body;
+const generateCustomId = (userType: string): string => {
+  const randomNumber = Math.floor(1000 + Math.random() * 9000);
+  const suffix = userType === "retailer" ? "RE" : userType === "seller" ? "SU" : null;
+
+  if (!suffix) {
+    throw new Error("Invalid userType for customId generation");
+  }
+
+  return `${suffix}-${randomNumber}`;
+};
+
+// Function to generate the adminId
+const generateAdminId = (): string => {
+  const randomNumber = Math.floor(1000 + Math.random() * 9000); // Generates a 4-digit number
+  return `ADM-${randomNumber}`;
+};
+
+app.post('/onboard-user-by-admin', async (req: any, res: any) => {
+  const { userType, businessName, businessOwner, phone, gstNumber, shopMarka, transport,
+    pincode, city, state, adminId } = req.body;
+
+  // Generate the custom ID for the user based on their type
+  const customId = generateCustomId(userType);
+
+
+  // Generate the adminId here (if not passed in the request body)
+  const generatedAdminId = adminId || generateAdminId();
+
+  try {
+    let registerUser;
+
+    // Onboarding logic based on user type
+    if (userType === 'seller') {
+      const qrCodeSupplierUrl = `${baseUrl}?id=${customId}`;
+      const qrCodeSupplier = await QRCode.toDataURL(qrCodeSupplierUrl);
+
+      const qrCodeSupplierSelfUrl = `${baseUrl}?type=supplier&id=${customId}&timestamp=${Date.now()}`;
+            const qrCodeSelfSupplier = await QRCode.toDataURL(qrCodeSupplierSelfUrl);
+
+      registerUser = await prisma.seller.create({
+        data: {
+          customId,
+          businessName,
+          businessOwner,
+          phone,
+          gstNumber,
+          shopMarka,
+          transport,
+          pincode,
+          city,
+          state,
+          qrCode: qrCodeSupplier,
+          qrCodeSelf : qrCodeSelfSupplier,
+          adminId: generatedAdminId, 
+        }
+      });
+
+      registerUser = await prisma.seller.findMany({
+        orderBy: { createdAt: 'desc' } // Sort by newest first
+      });
+    } else if (userType === 'retailer') {
+      const qrCodeUrl = `${baseUrl}?type=retailer&id=${customId}&supplierId=${generatedAdminId}`;
+      const qrCode = await QRCode.toDataURL(qrCodeUrl);
+
+      console.log("qrCode", qrCode)
+      registerUser = await prisma.retailer.create({
+        data: {
+          customId,
+          businessName,
+          businessOwner,
+          phone,
+          gstNumber,
+          shopMarka,
+          transport,
+          pincode,
+          city,
+          state,
+          qrCode: qrCode,
+          adminId: generatedAdminId,  // Use generated adminId
+        }
+      });
+    } else {
+      return res.status(400).json({ success: false, message: "Invalid user type" });
+    }
+
+    console.log("registerUser", registerUser)
+    return res.status(201).json({
+      success: true,
+      message: "User onboarded successfully.",
+      data: registerUser,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Error onboarding user", error });
+  }
+});
+
+
+
+app.post("/api/guests/create", async (req: any, res: any) => {
+  const { phone, sellerId } = req.body;
 
   // Validate phone input
   if (!phone || !/^[0-9]{10}$/.test(phone)) {

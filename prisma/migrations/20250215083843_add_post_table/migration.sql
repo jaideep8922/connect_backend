@@ -26,6 +26,7 @@ CREATE TABLE "Seller" (
     "adminId" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "notificationId" INTEGER,
 
     CONSTRAINT "Seller_pkey" PRIMARY KEY ("id")
 );
@@ -50,6 +51,7 @@ CREATE TABLE "Retailer" (
     "adminId" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "notificationId" INTEGER,
 
     CONSTRAINT "Retailer_pkey" PRIMARY KEY ("id")
 );
@@ -63,6 +65,15 @@ CREATE TABLE "Guest" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Guest_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Notification" (
+    "id" SERIAL NOT NULL,
+    "message" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -221,10 +232,16 @@ CREATE UNIQUE INDEX "Admin_phone_key" ON "Admin"("phone");
 ALTER TABLE "Seller" ADD CONSTRAINT "Seller_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "Admin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Seller" ADD CONSTRAINT "Seller_notificationId_fkey" FOREIGN KEY ("notificationId") REFERENCES "Notification"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Retailer" ADD CONSTRAINT "Retailer_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "Seller"("customId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Retailer" ADD CONSTRAINT "Retailer_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "Admin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Retailer" ADD CONSTRAINT "Retailer_notificationId_fkey" FOREIGN KEY ("notificationId") REFERENCES "Notification"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Guest" ADD CONSTRAINT "Guest_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "Seller"("customId") ON DELETE SET NULL ON UPDATE CASCADE;

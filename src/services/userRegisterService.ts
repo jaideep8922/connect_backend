@@ -344,12 +344,8 @@ export const addUser = async (userData: any) => {
 
       // const qrCodeSupplierSelfUrl = `${baseUrl}?type=supplier&supplierId=${sellerId}`;
       const qrCodeSupplierSelfUrl = `${baseUrl}?type=supplier&id=${customId}&timestamp=${Date.now()}`;
-
       const qrCodeSelfSupplier = await QRCode.toDataURL(qrCodeSupplierSelfUrl);
 
-
-      console.log("qrCodeSupplier", qrCodeSupplier)
-      console.log("qrCodeSelfSupplier", qrCodeSelfSupplier)
 
       const supplierData = {
         customId,

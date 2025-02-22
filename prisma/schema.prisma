@@ -48,6 +48,8 @@ model Seller {
   Notes         Notes[]
   BannerImages  BannerImages[]
   Guest Guest[]
+  notificationId Int?
+  notification   Notification? @relation(fields: [notificationId], references: [id])
 }
 
 model Retailer {
@@ -72,6 +74,9 @@ model Retailer {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   OrderDetails  OrderDetails[]
+notificationId Int?
+  notification   Notification? @relation(fields: [notificationId], references: [id])
+
 
   Notes Notes[]
 }
@@ -84,6 +89,13 @@ model Guest {
  seller        Seller?         @relation(fields: [sellerId], references: [customId])
  createdAt     DateTime       @default(now())
 
+}
+model Notification {
+  id          Int       @id @default(autoincrement())
+  message     String    // Renamed from "notifications" to avoid confusion
+  createdAt   DateTime  @default(now())
+  retailers   Retailer[] 
+  sellers     Seller[] 
 }
 
 model Product {

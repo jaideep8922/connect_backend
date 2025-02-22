@@ -87,6 +87,36 @@ export const getProductList = async (seller: any) => {
     }
 };
 
+export const getProductListbyAdmin = async (seller: any) => {
+  try {
+      const {
+          adminId,
+      } = seller;
+
+      // Check if Supplier exists
+      const supplierExists = await prisma.seller.findUnique({
+          // where: { id: sellerId },
+          where: { customId: adminId }, // Use customId instead of id
+
+      });
+
+      if (!supplierExists) {
+          throw new Error(`Supplier with ID ${adminId} does not exist.`);
+      }
+
+      const productList = await prisma.product.findMany({
+          where: { sellerId: adminId },
+      });
+
+      return { message: 'Got Product List successfully', data: productList };
+
+  } catch (error) {
+      console.error('Error Getting Product List database:', error);
+      throw new Error('Failed to get product List');
+  }
+};
+
+
 export const updateProduct = async (productData: any) => {
     try {
       const {
@@ -128,7 +158,7 @@ export const updateProduct = async (productData: any) => {
 
   export const getLowestPriceProductList = async (product: any) => {
     try {
-        const { productName } = product;
+        const { productName, sellerId } = product;
 
         if (!productName) {
             throw new Error('Product name is required.');
@@ -145,7 +175,7 @@ export const updateProduct = async (productData: any) => {
             orderBy: {
                 goodPrice: 'asc', // Order by the lowest goodPrice first
             },
-            take: 5, // Limit the results to 5 products
+            take: 1, // Limit the results to 5 products
         });
 
         return { message: 'Got Product List successfully', data: productList };
@@ -153,6 +183,35 @@ export const updateProduct = async (productData: any) => {
         console.error('Error Getting Product List from the database:', error);
         throw new Error('Failed to get product list.');
     }
+};
+
+export const getLowestPriceProductListbyAdmin = async (product: any) => {
+  try {
+      const { productName, adminId } = product;
+
+      if (!productName) {
+          throw new Error('Product name is required.');
+      }
+
+      // Fetch the product list with a LIKE query and filter for lowest prices
+      const productList = await prisma.product.findMany({
+          where: {
+              productName: {
+                  contains: productName, // Matches productName partially (LIKE '%productName%')
+                  mode: 'insensitive',  // Case-insensitive match
+              },
+          },
+          orderBy: {
+              goodPrice: 'asc', // Order by the lowest goodPrice first
+          },
+          take: 5, // Limit the results to 5 products
+      });
+
+      return { message: 'Got Product List successfully', data: productList };
+  } catch (error) {
+      console.error('Error Getting Product List from the database:', error);
+      throw new Error('Failed to get product list.');
+  }
 };
 
   

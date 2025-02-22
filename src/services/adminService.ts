@@ -42,6 +42,7 @@ export const getRetailerAndSellerList = async (paginationReq: any) => {
                 where: retailerSearchCondition,
                 skip: offset,
                 take: pageSize,
+                orderBy: { createdAt: 'desc' }
             });
 
             userList = { retailerList };
@@ -51,6 +52,7 @@ export const getRetailerAndSellerList = async (paginationReq: any) => {
                 where: sellerSearchCondition,
                 skip: offset,
                 take: pageSize,
+                orderBy: { createdAt: 'desc' }
             });
 
             userList = { sellerList };
@@ -61,11 +63,15 @@ export const getRetailerAndSellerList = async (paginationReq: any) => {
                     where: retailerSearchCondition,
                     skip: offset,
                     take: pageSize,
+                    orderBy: { createdAt: 'desc' }
+
                 }),
                 prisma.seller.findMany({
                     where: sellerSearchCondition,
                     skip: offset,
                     take: pageSize,
+                    orderBy: { createdAt: 'desc' }
+
                 }),
             ]);
 

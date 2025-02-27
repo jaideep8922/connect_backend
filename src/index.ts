@@ -37,7 +37,7 @@ app.use(express.json());
 app.use(cors(corsOptions));
 
 const upload = multer({
-  dest: 'uploads/', // Or specify Cloudinary or any cloud storage
+  dest: 'uploads/', // Or specify Cloudinary or any cloud sto
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max file size per image
   fileFilter: (req, file, cb) => {
     const extname = path.extname(file.originalname).toLowerCase();

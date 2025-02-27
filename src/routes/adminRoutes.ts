@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import prisma from '../prisma/prismaClient';
 
-import { getAllUsers, getDashboardCounts, getAllProductList } from '../controllers/adminController';
+import { getAllUsers, getDashboardCounts, getAllProductList, updateUserDetails, deleteUserDetails } from '../controllers/adminController';
 
 const app = express();
 app.use(cors());
@@ -10,6 +10,9 @@ app.use(cors());
 app.post('/get-all-users', getAllUsers);
 app.get('/get-dashboard-counts', getDashboardCounts);
 app.post('/get-all-product-list', getAllProductList);
+app.post('/update-user-details', updateUserDetails);
+app.delete('/delete-user-details', deleteUserDetails);
+
 
 
 app.get('/get-product-single', async (req: any, res: any) => {

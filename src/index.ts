@@ -18,13 +18,14 @@ import { sendOtpController } from './controllers/otpVerification';
 import { sendOtp, verifyOtp, verifyOtpForReloginRetailer, verifyOtpForReloginSeller } from './services/userRegisterService';
 // import { sendOtpController, verifyOtpController } from './controllers/otpVerification';
 import QRCode from 'qrcode';
+import cloudinary from 'cloudinary';
 
 
 const app = express();
 
 const corsOptions = {
   // origin: ['http://192.168.0.105:3000','http://192.168.0.105:3001'],
-  origin:['https://connect-frontend-iu5s.vercel.app', 'https://conn-dashbaord.vercel.app'],
+  origin:['https://connect-frontend-iu5s.vercel.app', 'https://conn-dashbaord.vercel.app', 'http://192.168.0.105:3000', 'http://192.168.0.105:3001'],
   // origin: [
   //   'http://192.168.0.105:3000',  
   // ],
@@ -46,6 +47,26 @@ const upload = multer({
     cb(null, true);
   },
 });
+
+cloudinary.v2.config({
+  cloud_name: 'dogsc8bt0',
+  api_key: '338558281491174',
+  api_secret: 'yJDW0DIvTrdmAxus4glabRqtuaw',
+});
+
+const uploadImage = async (file: any): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    cloudinary.v2.uploader.upload(file.path, { resource_type: 'image' }, (error, result: any) => {
+      if (error) {
+        return reject(error);
+      }
+      resolve(result.secure_url as string);
+    });
+  });
+};
+
+// const baseUrl = 'http://192.168.0.105:3000/onboard';
+const baseUrl = 'https://connect-frontend-iu5s.vercel.app/'
 
 app.use('/users', userRoutes);
 app.use('/config', configRoutes);
@@ -97,18 +118,62 @@ app.get("/api/products", async (req:any, res:any) => {
   }
 });
 
+app.get('/get-users', async (req: any, res: any) => {
+  try {
+    const sellers = await prisma.seller.findMany({
+      select: {
+        id: true,
+        customId: true,
+        businessName: true,
+        businessOwner: true,
+        phone: true,
+        gstNumber: true,
+        city: true,
+        state: true,
+        pincode: true,
+        createdAt: true,
+      },
+    });
 
-app.post('/generate-notification', async (req:any, res:any) => {
-  const { message } = req.body; 
+    const retailers = await prisma.retailer.findMany({
+      select: {
+        id: true,
+        customId: true,
+        businessName: true,
+        businessOwner: true,
+        phone: true,
+        gstNumber: true,
+        city: true,
+        state: true,
+        pincode: true,
+        sellerId: true, 
+        createdAt: true,
+      },
+    });
 
-  if (!message) {
-    return res.status(400).json({ error: "Message is required" });
+    return res.status(200).json({ 
+      success: true, 
+      users: [...sellers.map(user => ({ ...user, type: "SELLER" })), 
+              ...retailers.map(user => ({ ...user, type: "RETAILER" }))] 
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.post('/generate-notification', async (req: any, res: any) => {
+  const { message, recipients } = req.body;
+
+  if (!message || !Array.isArray(recipients) || recipients.length === 0) {
+    return res.status(400).json({ error: "Message and at least one recipient are required" });
   }
 
   try {
     const notification = await prisma.notification.create({
       data: {
-        message, 
+        message,
+        recipients, 
       },
     });
 
@@ -131,11 +196,6 @@ app.get('/get-all-notification', async(req:any, res:any)=>{
   }
 })
 
-
-
-// const baseUrl = 'http://192.168.0.105:3000/onboard';
-const baseUrl = 'https://connect-frontend-iu5s.vercel.app/'
-
 const generateCustomId = (userType: string): string => {
   const randomNumber = Math.floor(1000 + Math.random() * 9000);
   const suffix = userType === "retailer" ? "RE" : userType === "seller" ? "SU" : null;
@@ -143,31 +203,31 @@ const generateCustomId = (userType: string): string => {
   if (!suffix) {
     throw new Error("Invalid userType for customId generation");
   }
-
   return `${suffix}-${randomNumber}`;
 };
 
-// Function to generate the adminId
 const generateAdminId = (): string => {
   const randomNumber = Math.floor(1000 + Math.random() * 9000); // Generates a 4-digit number
   return `ADM-${randomNumber}`;
 };
 
-app.post('/onboard-user-by-admin', async (req: any, res: any) => {
+app.post('/onboard-user-by-admin', upload.single('file'), async (req: any, res: any) => {
   const { userType, businessName, businessOwner, phone, gstNumber, shopMarka, transport,
     pincode, city, state, adminId } = req.body;
 
-  // Generate the custom ID for the user based on their type
   const customId = generateCustomId(userType);
 
-
-  // Generate the adminId here (if not passed in the request body)
   const generatedAdminId = adminId || generateAdminId();
+
+     // Handle file upload
+     let filePath = '';
+     if (req.file) {
+       filePath = await uploadImage(req.file);
+     }
 
   try {
     let registerUser;
 
-    // Onboarding logic based on user type
     if (userType === 'seller') {
       const qrCodeSupplierUrl = `${baseUrl}?id=${customId}`;
       const qrCodeSupplier = await QRCode.toDataURL(qrCodeSupplierUrl);
@@ -187,6 +247,7 @@ app.post('/onboard-user-by-admin', async (req: any, res: any) => {
           pincode,
           city,
           state,
+          filePath,
           qrCode: qrCodeSupplier,
           qrCodeSelf : qrCodeSelfSupplier,
           adminId: generatedAdminId, 
@@ -194,13 +255,12 @@ app.post('/onboard-user-by-admin', async (req: any, res: any) => {
       });
 
       registerUser = await prisma.seller.findMany({
-        orderBy: { createdAt: 'desc' } // Sort by newest first
+        orderBy: { createdAt: 'desc' } 
       });
     } else if (userType === 'retailer') {
       const qrCodeUrl = `${baseUrl}?type=retailer&id=${customId}&supplierId=${generatedAdminId}`;
       const qrCode = await QRCode.toDataURL(qrCodeUrl);
 
-      console.log("qrCode", qrCode)
       registerUser = await prisma.retailer.create({
         data: {
           customId,
@@ -213,8 +273,9 @@ app.post('/onboard-user-by-admin', async (req: any, res: any) => {
           pincode,
           city,
           state,
+          filePath,
           qrCode: qrCode,
-          adminId: generatedAdminId,  // Use generated adminId
+          adminId: generatedAdminId,  
         }
       });
     } else {
@@ -227,8 +288,10 @@ app.post('/onboard-user-by-admin', async (req: any, res: any) => {
       message: "User onboarded successfully.",
       data: registerUser,
     });
-  } catch (error) {
-    return res.status(500).json({ success: false, message: "Error onboarding user", error });
+  } catch (error:any) {
+    console.error("Error onboarding user:", error);
+    return res.status(500).json({ success: false, message: "Error onboarding user", error: error.message });
+    // return res.status(500).json({ success: false, message: "Error onboarding user", error });
   }
 });
 
@@ -245,7 +308,7 @@ app.post("/api/guests/create", async (req: any, res: any) => {
   try {
     // Check if the phone number already exists
     const existingGuest = await prisma.guest.findUnique({
-      where: { phone },
+      where: { phone, sellerId },
     });
 
     if (existingGuest) {
@@ -264,9 +327,13 @@ app.post("/api/guests/create", async (req: any, res: any) => {
       data: {
         phone,
         customId,
+        sellerId
       },
+
+      
     });
 
+    // { message: 'Retailer added successfully', data: newGuest }
     return res.status(201).json({
       success: true,
       message: "Guest created successfully.",

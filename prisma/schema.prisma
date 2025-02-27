@@ -16,9 +16,7 @@ datasource db {
 model Status {
   id     Int    @id @default(autoincrement())
   status Int
-
   OrderDetails OrderDetails[]
-
   OrderStatusHistory OrderStatusHistory[]
 }
 
@@ -74,7 +72,7 @@ model Retailer {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   OrderDetails  OrderDetails[]
-notificationId Int?
+  notificationId Int?
   notification   Notification? @relation(fields: [notificationId], references: [id])
 
 
@@ -96,6 +94,7 @@ model Notification {
   createdAt   DateTime  @default(now())
   retailers   Retailer[] 
   sellers     Seller[] 
+   recipients String[] 
 }
 
 model Product {

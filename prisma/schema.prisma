@@ -94,11 +94,11 @@ model Notification {
   createdAt   DateTime  @default(now())
   retailers   Retailer[] 
   sellers     Seller[] 
-   recipients String[] 
+   recipients Recipient[] 
 }
 
 model Recipient {
-  id              Int            @id @default(autoincrement())
+  id              Int          @id @default(autoincrement())
   notificationId  Int
   notification    Notification   @relation(fields: [notificationId], references: [id], onDelete: Cascade)
   recipient       String

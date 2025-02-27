@@ -50,6 +50,7 @@ const getRetailerAndSellerList = (paginationReq) => __awaiter(void 0, void 0, vo
                 where: retailerSearchCondition,
                 skip: offset,
                 take: pageSize,
+                orderBy: { createdAt: 'desc' }
             });
             userList = { retailerList };
         }
@@ -59,6 +60,7 @@ const getRetailerAndSellerList = (paginationReq) => __awaiter(void 0, void 0, vo
                 where: sellerSearchCondition,
                 skip: offset,
                 take: pageSize,
+                orderBy: { createdAt: 'desc' }
             });
             userList = { sellerList };
         }
@@ -69,11 +71,13 @@ const getRetailerAndSellerList = (paginationReq) => __awaiter(void 0, void 0, vo
                     where: retailerSearchCondition,
                     skip: offset,
                     take: pageSize,
+                    orderBy: { createdAt: 'desc' }
                 }),
                 prismaClient_1.default.seller.findMany({
                     where: sellerSearchCondition,
                     skip: offset,
                     take: pageSize,
+                    orderBy: { createdAt: 'desc' }
                 }),
             ]);
             userList = {

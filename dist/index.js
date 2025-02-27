@@ -30,10 +30,12 @@ const cors_1 = __importDefault(require("cors"));
 const prismaClient_1 = __importDefault(require("./prisma/prismaClient"));
 const userRegisterService_1 = require("./services/userRegisterService");
 // import { sendOtpController, verifyOtpController } from './controllers/otpVerification';
+const qrcode_1 = __importDefault(require("qrcode"));
+const cloudinary_1 = __importDefault(require("cloudinary"));
 const app = (0, express_1.default)();
 const corsOptions = {
-    // origin: 'http://192.168.0.105:3000', 
-    origin: 'https://connect-frontend-iu5s.vercel.app',
+    // origin: ['http://192.168.0.105:3000','http://192.168.0.105:3001'],
+    origin: ['https://connect-frontend-iu5s.vercel.app', 'https://conn-dashbaord.vercel.app', 'http://192.168.0.105:3000', 'http://192.168.0.105:3001'],
     // origin: [
     //   'http://192.168.0.105:3000',  
     // ],
@@ -42,7 +44,7 @@ const corsOptions = {
 app.use(express_1.default.json());
 app.use((0, cors_1.default)(corsOptions));
 const upload = (0, multer_1.default)({
-    dest: 'uploads/', // Or specify Cloudinary or any cloud storage
+    dest: 'uploads/', // Or specify Cloudinary or any cloud sto
     limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max file size per image
     fileFilter: (req, file, cb) => {
         const extname = path_1.default.extname(file.originalname).toLowerCase();
@@ -52,6 +54,23 @@ const upload = (0, multer_1.default)({
         cb(null, true);
     },
 });
+cloudinary_1.default.v2.config({
+    cloud_name: 'dogsc8bt0',
+    api_key: '338558281491174',
+    api_secret: 'yJDW0DIvTrdmAxus4glabRqtuaw',
+});
+const uploadImage = (file) => __awaiter(void 0, void 0, void 0, function* () {
+    return new Promise((resolve, reject) => {
+        cloudinary_1.default.v2.uploader.upload(file.path, { resource_type: 'image' }, (error, result) => {
+            if (error) {
+                return reject(error);
+            }
+            resolve(result.secure_url);
+        });
+    });
+});
+// const baseUrl = 'http://192.168.0.105:3000/onboard';
+const baseUrl = 'https://connect-frontend-iu5s.vercel.app/';
 app.use('/users', userRoutes_1.default);
 app.use('/config', configRoutes_1.default);
 app.use('/product', productRoutes_1.default);
@@ -69,8 +88,193 @@ app.post('/send-otp', userRegisterService_1.sendOtp);
 app.post('/verify-otp', userRegisterService_1.verifyOtp);
 app.post('/verify-otp-relogin-retailer', userRegisterService_1.verifyOtpForReloginRetailer);
 app.post('/verify-otp-relogin-supplier', userRegisterService_1.verifyOtpForReloginSeller);
-// app.post('/send-otp', sendOtpController);
-// app.post('/verify-otp', verifyOtpController);
+app.get("/api/products", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { productName } = req.query;
+        if (!productName) {
+            return res.status(400).json({ error: "Product name is required" });
+        }
+        const product = yield prismaClient_1.default.product.findMany({
+            where: {
+                productName: {
+                    contains: productName, // Partial search
+                    mode: "insensitive", // Case insensitive
+                },
+            },
+            include: {
+                seller: true, // Include seller details if needed
+            },
+        });
+        if (!product.length) {
+            return res.status(404).json({ message: "No products found" });
+        }
+        res.json(product);
+    }
+    catch (error) {
+        console.error("Error fetching product:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}));
+app.get('/get-users', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const sellers = yield prismaClient_1.default.seller.findMany({
+            select: {
+                id: true,
+                customId: true,
+                businessName: true,
+                businessOwner: true,
+                phone: true,
+                gstNumber: true,
+                city: true,
+                state: true,
+                pincode: true,
+                createdAt: true,
+            },
+        });
+        const retailers = yield prismaClient_1.default.retailer.findMany({
+            select: {
+                id: true,
+                customId: true,
+                businessName: true,
+                businessOwner: true,
+                phone: true,
+                gstNumber: true,
+                city: true,
+                state: true,
+                pincode: true,
+                sellerId: true,
+                createdAt: true,
+            },
+        });
+        return res.status(200).json({
+            success: true,
+            users: [...sellers.map(user => (Object.assign(Object.assign({}, user), { type: "SELLER" }))),
+                ...retailers.map(user => (Object.assign(Object.assign({}, user), { type: "RETAILER" })))]
+        });
+    }
+    catch (error) {
+        console.error("Error fetching users:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+}));
+app.post('/generate-notification', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { message, recipients } = req.body;
+    if (!message || !Array.isArray(recipients) || recipients.length === 0) {
+        return res.status(400).json({ error: "Message and at least one recipient are required" });
+    }
+    try {
+        const notification = yield prismaClient_1.default.notification.create({
+            data: {
+                message,
+                recipients,
+            },
+        });
+        return res.status(201).json({ success: true, notification });
+    }
+    catch (error) {
+        console.error("Error creating notification:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+}));
+app.get('/get-all-notification', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const notification = yield prismaClient_1.default.notification.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
+        return res.status(200).json({ success: true, notification });
+    }
+    catch (error) {
+        console.error("Error creating notification:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+}));
+const generateCustomId = (userType) => {
+    const randomNumber = Math.floor(1000 + Math.random() * 9000);
+    const suffix = userType === "retailer" ? "RE" : userType === "seller" ? "SU" : null;
+    if (!suffix) {
+        throw new Error("Invalid userType for customId generation");
+    }
+    return `${suffix}-${randomNumber}`;
+};
+const generateAdminId = () => {
+    const randomNumber = Math.floor(1000 + Math.random() * 9000); // Generates a 4-digit number
+    return `ADM-${randomNumber}`;
+};
+app.post('/onboard-user-by-admin', upload.single('file'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userType, businessName, businessOwner, phone, gstNumber, shopMarka, transport, pincode, city, state, adminId } = req.body;
+    const customId = generateCustomId(userType);
+    const generatedAdminId = adminId || generateAdminId();
+    // Handle file upload
+    let filePath = '';
+    if (req.file) {
+        filePath = yield uploadImage(req.file);
+    }
+    try {
+        let registerUser;
+        if (userType === 'seller') {
+            const qrCodeSupplierUrl = `${baseUrl}?id=${customId}`;
+            const qrCodeSupplier = yield qrcode_1.default.toDataURL(qrCodeSupplierUrl);
+            const qrCodeSupplierSelfUrl = `${baseUrl}?type=supplier&id=${customId}&timestamp=${Date.now()}`;
+            const qrCodeSelfSupplier = yield qrcode_1.default.toDataURL(qrCodeSupplierSelfUrl);
+            registerUser = yield prismaClient_1.default.seller.create({
+                data: {
+                    customId,
+                    businessName,
+                    businessOwner,
+                    phone,
+                    gstNumber,
+                    shopMarka,
+                    transport,
+                    pincode,
+                    city,
+                    state,
+                    filePath,
+                    qrCode: qrCodeSupplier,
+                    qrCodeSelf: qrCodeSelfSupplier,
+                    adminId: generatedAdminId,
+                }
+            });
+            registerUser = yield prismaClient_1.default.seller.findMany({
+                orderBy: { createdAt: 'desc' }
+            });
+        }
+        else if (userType === 'retailer') {
+            const qrCodeUrl = `${baseUrl}?type=retailer&id=${customId}&supplierId=${generatedAdminId}`;
+            const qrCode = yield qrcode_1.default.toDataURL(qrCodeUrl);
+            registerUser = yield prismaClient_1.default.retailer.create({
+                data: {
+                    customId,
+                    businessName,
+                    businessOwner,
+                    phone,
+                    gstNumber,
+                    shopMarka,
+                    transport,
+                    pincode,
+                    city,
+                    state,
+                    filePath,
+                    qrCode: qrCode,
+                    adminId: generatedAdminId,
+                }
+            });
+        }
+        else {
+            return res.status(400).json({ success: false, message: "Invalid user type" });
+        }
+        console.log("registerUser", registerUser);
+        return res.status(201).json({
+            success: true,
+            message: "User onboarded successfully.",
+            data: registerUser,
+        });
+    }
+    catch (error) {
+        console.error("Error onboarding user:", error);
+        return res.status(500).json({ success: false, message: "Error onboarding user", error: error.message });
+        // return res.status(500).json({ success: false, message: "Error onboarding user", error });
+    }
+}));
 app.post("/api/guests/create", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { phone, sellerId } = req.body;
     // Validate phone input
@@ -80,7 +284,7 @@ app.post("/api/guests/create", (req, res) => __awaiter(void 0, void 0, void 0, f
     try {
         // Check if the phone number already exists
         const existingGuest = yield prismaClient_1.default.guest.findUnique({
-            where: { phone },
+            where: { phone, sellerId },
         });
         if (existingGuest) {
             return res.status(409).json({
@@ -96,8 +300,10 @@ app.post("/api/guests/create", (req, res) => __awaiter(void 0, void 0, void 0, f
             data: {
                 phone,
                 customId,
+                sellerId
             },
         });
+        // { message: 'Retailer added successfully', data: newGuest }
         return res.status(201).json({
             success: true,
             message: "Guest created successfully.",

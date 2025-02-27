@@ -24,6 +24,8 @@ const upload = (0, multer_1.default)({
 });
 app.post('/add-product', upload.fields([{ name: 'productImage' }, { name: 'productVideo' }]), productController_1.addProduct);
 app.get('/get-product-list', productController_1.getProductBySellerId);
+app.get('/get-product-list-by-admin', productController_1.getProductByAdminId);
 app.put('/update-product', productController_1.updateProductData);
 app.get('/search-product', productController_1.serachProductByLowestPrice);
+app.get('/search-product-by-admin', productController_1.serachProductByLowestPricebyAdmin);
 exports.default = app;

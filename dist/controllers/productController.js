@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.serachProductByLowestPrice = exports.updateProductData = exports.getProductBySellerId = exports.addProduct = void 0;
+exports.serachProductByLowestPricebyAdmin = exports.serachProductByLowestPrice = exports.updateProductData = exports.getProductByAdminId = exports.getProductBySellerId = exports.addProduct = void 0;
 const responseHandle_1 = require("../utils/responseHandle");
 const productService_1 = require("../services/productService");
 const cloudinary_1 = __importDefault(require("cloudinary"));
@@ -88,6 +88,23 @@ const getProductBySellerId = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.getProductBySellerId = getProductBySellerId;
+const getProductByAdminId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { adminId } = req.query;
+        if (!adminId) {
+            return res.status(400).json({ error: 'Seller Id Missing.' });
+        }
+        const productList = yield (0, productService_1.getProductListbyAdmin)({
+            adminId,
+        });
+        (0, responseHandle_1.sendSuccess)(res, productList.data, productList.message);
+    }
+    catch (error) {
+        console.error('Error fetching Product List:', error);
+        (0, responseHandle_1.sendError)(res, 'Error fetching Product List:');
+    }
+});
+exports.getProductByAdminId = getProductByAdminId;
 const updateProductData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const products = req.body; // Expecting an array of product objects
@@ -124,7 +141,7 @@ const updateProductData = (req, res) => __awaiter(void 0, void 0, void 0, functi
 exports.updateProductData = updateProductData;
 const serachProductByLowestPrice = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { productName } = req.query;
+        const { productName, sellerId } = req.query;
         if (!productName) {
             return res.status(400).json({ error: 'product Name Missing.' });
         }
@@ -139,3 +156,21 @@ const serachProductByLowestPrice = (req, res) => __awaiter(void 0, void 0, void 
     }
 });
 exports.serachProductByLowestPrice = serachProductByLowestPrice;
+const serachProductByLowestPricebyAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { productName, adminId } = req.query;
+        if (!productName) {
+            return res.status(400).json({ error: 'product Name Missing.' });
+        }
+        const productList = yield (0, productService_1.getLowestPriceProductListbyAdmin)({
+            productName,
+            adminId
+        });
+        (0, responseHandle_1.sendSuccess)(res, productList.data, productList.message);
+    }
+    catch (error) {
+        console.error('Error fetching Product List:', error);
+        (0, responseHandle_1.sendError)(res, 'Error fetching Product List:');
+    }
+});
+exports.serachProductByLowestPricebyAdmin = serachProductByLowestPricebyAdmin;

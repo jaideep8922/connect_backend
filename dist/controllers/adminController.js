@@ -8,10 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllProductList = exports.getDashboardCounts = exports.getAllUsers = void 0;
+exports.getAllProductList = exports.getDashboardCounts = exports.deleteUserDetails = exports.updateUserDetails = exports.getAllUsers = void 0;
 const responseHandle_1 = require("../utils/responseHandle");
 const adminService_1 = require("../services/adminService");
+const prismaClient_1 = __importDefault(require("../prisma/prismaClient"));
 const getAllUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { pageNumber, pageSize, searchValue, userType } = req.body;
@@ -33,6 +37,65 @@ const getAllUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.getAllUsers = getAllUsers;
+const updateUserDetails = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id, userType, updatedData } = req.body;
+        if (!id || !userType || !updatedData) {
+            return res.status(400).json({ error: "Invalid request data" });
+        }
+        let updatedUser;
+        if (userType === "Retailer") {
+            updatedUser = yield prismaClient_1.default.retailer.update({
+                where: { id },
+                data: updatedData,
+            });
+        }
+        else if (userType === "Seller" || userType === "Supplier") {
+            updatedUser = yield prismaClient_1.default.seller.update({
+                where: { id },
+                data: updatedData,
+            });
+        }
+        else {
+            return res.status(400).json({ error: "Invalid user type" });
+        }
+        return res.status(200).json({ message: "User updated successfully", data: updatedUser });
+    }
+    catch (error) {
+        console.error("Error updating user:", error);
+        return res.status(500).json({ error: "Failed to update user" });
+    }
+});
+exports.updateUserDetails = updateUserDetails;
+const deleteUserDetails = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { customId, userType } = req.body;
+        if (!customId || !userType) {
+            return res.status(400).json({ error: "customId and userType are required" });
+        }
+        let deletedUser;
+        if (userType === "Retailer") {
+            deletedUser = yield prismaClient_1.default.retailer.delete({
+                where: { customId },
+            });
+        }
+        else if (userType === "Seller") {
+            deletedUser = yield prismaClient_1.default.seller.delete({
+                where: { customId },
+            });
+        }
+        else {
+            return res.status(400).json({ error: "Invalid user type" });
+        }
+        console.log("deletedUser", deletedUser);
+        return res.status(200).json({ message: "User deleted successfully", data: deletedUser });
+    }
+    catch (error) {
+        console.error("Error deleting user:", error);
+        return res.status(500).json({ error: "Failed to delete user" });
+    }
+});
+exports.deleteUserDetails = deleteUserDetails;
 const getDashboardCounts = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const countsObj = yield (0, adminService_1.getAllCounts)();

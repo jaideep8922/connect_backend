@@ -269,8 +269,6 @@ const addUser = (userData) => __awaiter(void 0, void 0, void 0, function* () {
             // const qrCodeSupplierSelfUrl = `${baseUrl}?type=supplier&supplierId=${sellerId}`;
             const qrCodeSupplierSelfUrl = `${baseUrl}?type=supplier&id=${customId}&timestamp=${Date.now()}`;
             const qrCodeSelfSupplier = yield qrcode_1.default.toDataURL(qrCodeSupplierSelfUrl);
-            console.log("qrCodeSupplier", qrCodeSupplier);
-            console.log("qrCodeSelfSupplier", qrCodeSelfSupplier);
             const supplierData = {
                 customId,
                 qrCode: qrCodeSupplier,

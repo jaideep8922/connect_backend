@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getLowestPriceProductList = exports.updateProduct = exports.getProductList = exports.createProduct = void 0;
+exports.getLowestPriceProductListbyAdmin = exports.getLowestPriceProductList = exports.updateProduct = exports.getProductListbyAdmin = exports.getProductList = exports.createProduct = void 0;
 const prismaClient_1 = __importDefault(require("../prisma/prismaClient"));
 const generateProductId = () => {
     const randomNumber = Math.floor(1000 + Math.random() * 9000);
@@ -76,6 +76,28 @@ const getProductList = (seller) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.getProductList = getProductList;
+const getProductListbyAdmin = (seller) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { adminId, } = seller;
+        // Check if Supplier exists
+        const supplierExists = yield prismaClient_1.default.seller.findUnique({
+            // where: { id: sellerId },
+            where: { customId: adminId }, // Use customId instead of id
+        });
+        if (!supplierExists) {
+            throw new Error(`Supplier with ID ${adminId} does not exist.`);
+        }
+        const productList = yield prismaClient_1.default.product.findMany({
+            where: { sellerId: adminId },
+        });
+        return { message: 'Got Product List successfully', data: productList };
+    }
+    catch (error) {
+        console.error('Error Getting Product List database:', error);
+        throw new Error('Failed to get product List');
+    }
+});
+exports.getProductListbyAdmin = getProductListbyAdmin;
 const updateProduct = (productData) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { productId, productName, averagePrice, goodPrice, highPrice, description, } = productData;
@@ -107,7 +129,34 @@ const updateProduct = (productData) => __awaiter(void 0, void 0, void 0, functio
 exports.updateProduct = updateProduct;
 const getLowestPriceProductList = (product) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { productName } = product;
+        const { productName, sellerId } = product;
+        if (!productName) {
+            throw new Error('Product name is required.');
+        }
+        // Fetch the product list with a LIKE query and filter for lowest prices
+        const productList = yield prismaClient_1.default.product.findMany({
+            where: {
+                productName: {
+                    contains: productName, // Matches productName partially (LIKE '%productName%')
+                    mode: 'insensitive', // Case-insensitive match
+                },
+            },
+            orderBy: {
+                goodPrice: 'asc', // Order by the lowest goodPrice first
+            },
+            take: 1, // Limit the results to 5 products
+        });
+        return { message: 'Got Product List successfully', data: productList };
+    }
+    catch (error) {
+        console.error('Error Getting Product List from the database:', error);
+        throw new Error('Failed to get product list.');
+    }
+});
+exports.getLowestPriceProductList = getLowestPriceProductList;
+const getLowestPriceProductListbyAdmin = (product) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { productName, adminId } = product;
         if (!productName) {
             throw new Error('Product name is required.');
         }
@@ -131,4 +180,4 @@ const getLowestPriceProductList = (product) => __awaiter(void 0, void 0, void 0,
         throw new Error('Failed to get product list.');
     }
 });
-exports.getLowestPriceProductList = getLowestPriceProductList;
+exports.getLowestPriceProductListbyAdmin = getLowestPriceProductListbyAdmin;

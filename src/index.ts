@@ -173,8 +173,13 @@ app.post('/generate-notification', async (req: any, res: any) => {
     const notification = await prisma.notification.create({
       data: {
         message,
-        recipients, 
+        recipients: {
+          create: recipients.map((recipient: string) => ({
+            recipient, 
+          })),
+        },
       },
+      include: { recipients: true }, 
     });
 
     return res.status(201).json({ success: true, notification });
@@ -184,17 +189,56 @@ app.post('/generate-notification', async (req: any, res: any) => {
   }
 });
 
-app.get('/get-all-notification', async(req:any, res:any)=>{
+app.get('/get-all-notification', async (req: any, res: any) => {
   try {
-    const notification = await prisma.notification.findMany({
-      orderBy: { createdAt: 'desc' }
+    const notifications = await prisma.notification.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        recipients: true, // Include recipient details
+      },
     });
-    return res.status(200).json({ success: true, notification });
+
+    return res.status(200).json({ success: true, notifications });
   } catch (error) {
-    console.error("Error creating notification:", error);
+    console.error("Error fetching notifications:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
-})
+});
+
+
+// app.post('/generate-notification', async (req: any, res: any) => {
+//   const { message, recipients } = req.body;
+
+//   if (!message || !Array.isArray(recipients) || recipients.length === 0) {
+//     return res.status(400).json({ error: "Message and at least one recipient are required" });
+//   }
+
+//   try {
+//     const notification = await prisma.notification.create({
+//       data: {
+//         message,
+//         recipients, 
+//       },
+//     });
+
+//     return res.status(201).json({ success: true, notification });
+//   } catch (error) {
+//     console.error("Error creating notification:", error);
+//     return res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
+
+// app.get('/get-all-notification', async(req:any, res:any)=>{
+//   try {
+//     const notification = await prisma.notification.findMany({
+//       orderBy: { createdAt: 'desc' }
+//     });
+//     return res.status(200).json({ success: true, notification });
+//   } catch (error) {
+//     console.error("Error creating notification:", error);
+//     return res.status(500).json({ error: "Internal Server Error" });
+//   }
+// })
 
 const generateCustomId = (userType: string): string => {
   const randomNumber = Math.floor(1000 + Math.random() * 9000);

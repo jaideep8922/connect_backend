@@ -19,9 +19,10 @@ import { sendOtp, verifyOtp, verifyOtpForReloginRetailer, verifyOtpForReloginSel
 // import { sendOtpController, verifyOtpController } from './controllers/otpVerification';
 import QRCode from 'qrcode';
 import cloudinary from 'cloudinary';
-
+import dotenv from 'dotenv';
 
 const app = express();
+dotenv.config();
 
 const corsOptions = {
   origin:['https://connect-frontend-iu5s.vercel.app', 'https://conn-dashbaord.vercel.app', 'http://192.168.0.105:3000', 'http://192.168.0.105:3001', 'http://dashboard.badasauda.com', 'http://badasauda.com'],

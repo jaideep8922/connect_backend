@@ -24,11 +24,7 @@ import cloudinary from 'cloudinary';
 const app = express();
 
 const corsOptions = {
-  // origin: ['http://192.168.0.105:3000','http://192.168.0.105:3001'],
-  origin:['https://connect-frontend-iu5s.vercel.app', 'https://conn-dashbaord.vercel.app', 'http://192.168.0.105:3000', 'http://192.168.0.105:3001'],
-  // origin: [
-  //   'http://192.168.0.105:3000',  
-  // ],
+  origin:['https://connect-frontend-iu5s.vercel.app', 'https://conn-dashbaord.vercel.app', 'http://192.168.0.105:3000', 'http://192.168.0.105:3001', 'http://dashboard.badasauda.com/', 'http://badasauda.com/'],
   credentials: true,
 };
 app.use(express.json());

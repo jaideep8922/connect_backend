@@ -276,7 +276,7 @@ const generateCustomId = (userType: string): string => {
 };
 
 // const baseUrl = 'http://192.168.0.105:3000/onboard';
-const baseUrl = 'https://connect-frontend-iu5s.vercel.app/'
+const baseUrl = 'http://badasauda.com/'
 
 export const addUser = async (userData: any) => {
   try {

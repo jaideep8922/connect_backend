@@ -63,7 +63,7 @@ const uploadImage = async (file: any): Promise<string> => {
 };
 
 // const baseUrl = 'http://192.168.0.105:3000/onboard';
-const baseUrl = 'https://connect-frontend-iu5s.vercel.app/'
+const baseUrl = 'http://badasauda.com/'
 
 app.use('/users', userRoutes);
 app.use('/config', configRoutes);

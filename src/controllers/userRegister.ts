@@ -16,7 +16,7 @@ cloudinary.v2.config({
 
 export const getUserById = async (req: any, res: any) => {
   try {
-    const { 
+    const {
       customId,
       userType
     } = req.body;
@@ -26,31 +26,31 @@ export const getUserById = async (req: any, res: any) => {
       return res.status(400).json({ error: 'Invalid or missing user ID' });
     }
 
-    if (!customId  ) {
+    if (!customId) {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
 
-      if (userType == 'Retailer') {
-        const user = await fetchRetailerById(customId);
+    if (userType == 'Retailer') {
+      const user = await fetchRetailerById(customId);
 
-        if (!user) {
-          return res.status(404).json({ error: 'Retailer not found' });
-        }
-
-        // Send success response
-        sendSuccess(res, user, 'Retailer fetched successfully');
+      if (!user) {
+        return res.status(404).json({ error: 'Retailer not found' });
       }
-      else if (userType == 'Supplier') {
-        const user = await fetchSellerById(customId);
 
-        if (!user) {
-          return res.status(404).json({ error: 'Supplier not found' });
-        }
+      // Send success response
+      sendSuccess(res, user, 'Retailer fetched successfully');
+    }
+    else if (userType == 'Supplier') {
+      const user = await fetchSellerById(customId);
 
-        // Send success response
-        sendSuccess(res, user, 'Supplier fetched successfully');
+      if (!user) {
+        return res.status(404).json({ error: 'Supplier not found' });
       }
-   
+
+      // Send success response
+      sendSuccess(res, user, 'Supplier fetched successfully');
+    }
+
 
   } catch (error) {
     console.error('Error fetching user by ID:', error);
@@ -86,8 +86,15 @@ export const onBoardUser = async (req: any, res: any) => {
       city,
       state,
       qrCode,
-      qrCodeSelf
+      qrCodeSelf,
     } = req.body;
+
+    let baseUrl = req.get('Origin') || req.get('Referer') || '';
+
+    if (baseUrl.includes('://')) {
+      const url = new URL(baseUrl);
+      baseUrl = `${url.protocol}//${url.host}/`;
+    }
 
     // Validation for required fields
     if (!userType || !['Retailer', 'Supplier'].includes(userType)) {
@@ -105,7 +112,7 @@ export const onBoardUser = async (req: any, res: any) => {
       filePath = await uploadImage(req.file);
     }
 
-    console.log("filePath",filePath)
+    console.log("filePath", filePath)
 
     // Add user logic
     const newUser: any = await addUser({
@@ -122,7 +129,8 @@ export const onBoardUser = async (req: any, res: any) => {
       state,
       qrCode,
       filePath,
-      qrCodeSelf
+      qrCodeSelf,
+      baseUrl
     });
 
     if (!newUser) {

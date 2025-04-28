@@ -1,4 +1,6 @@
 import express from 'express';
+import dotenv from 'dotenv';
+dotenv.config();
 import userRoutes from './routes/userRoutes';
 import configRoutes from './routes/configRoutes';
 import productRoutes from './routes/productRoutes';
@@ -19,13 +21,11 @@ import { sendOtp, verifyOtp, verifyOtpForReloginRetailer, verifyOtpForReloginSel
 // import { sendOtpController, verifyOtpController } from './controllers/otpVerification';
 import QRCode from 'qrcode';
 import cloudinary from 'cloudinary';
-import dotenv from 'dotenv';
 
 const app = express();
-dotenv.config();
 
 const corsOptions = {
-  origin:['https://connect-frontend-iu5s.vercel.app', 'https://conn-dashbaord.vercel.app', 'http://192.168.0.105:3000', 'http://192.168.0.105:3001', 'http://dashboard.badasauda.com', 'http://badasauda.com'],
+  origin: ['https://connect-frontend-iu5s.vercel.app', 'https://conn-dashbaord.vercel.app', 'http://192.168.0.105:3000', 'http://192.168.0.105:3001', 'http://dashboard.badasauda.com', 'http://badasauda.com', 'http://localhost:3000', 'http://192.168.29.30:3000'],
   credentials: true,
 };
 app.use(express.json());
@@ -84,7 +84,7 @@ app.post('/verify-otp-relogin-retailer', verifyOtpForReloginRetailer)
 app.post('/verify-otp-relogin-supplier', verifyOtpForReloginSeller)
 
 
-app.get("/api/products", async (req:any, res:any) => {
+app.get("/api/products", async (req: any, res: any) => {
   try {
     const { productName } = req.query;
 
@@ -143,15 +143,15 @@ app.get('/get-users', async (req: any, res: any) => {
         city: true,
         state: true,
         pincode: true,
-        sellerId: true, 
+        sellerId: true,
         createdAt: true,
       },
     });
 
-    return res.status(200).json({ 
-      success: true, 
-      users: [...sellers.map(user => ({ ...user, type: "SELLER" })), 
-              ...retailers.map(user => ({ ...user, type: "RETAILER" }))] 
+    return res.status(200).json({
+      success: true,
+      users: [...sellers.map(user => ({ ...user, type: "SELLER" })),
+      ...retailers.map(user => ({ ...user, type: "RETAILER" }))]
     });
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -172,11 +172,11 @@ app.post('/generate-notification', async (req: any, res: any) => {
         message,
         recipients: {
           create: recipients.map((recipient: string) => ({
-            recipient, 
+            recipient,
           })),
         },
       },
-      include: { recipients: true }, 
+      include: { recipients: true },
     });
 
     return res.status(201).json({ success: true, notification });
@@ -260,11 +260,11 @@ app.post('/onboard-user-by-admin', upload.single('file'), async (req: any, res: 
 
   const generatedAdminId = adminId || generateAdminId();
 
-     // Handle file upload
-     let filePath = '';
-     if (req.file) {
-       filePath = await uploadImage(req.file);
-     }
+  // Handle file upload
+  let filePath = '';
+  if (req.file) {
+    filePath = await uploadImage(req.file);
+  }
 
   try {
     let registerUser;
@@ -274,7 +274,7 @@ app.post('/onboard-user-by-admin', upload.single('file'), async (req: any, res: 
       const qrCodeSupplier = await QRCode.toDataURL(qrCodeSupplierUrl);
 
       const qrCodeSupplierSelfUrl = `${baseUrl}?type=supplier&id=${customId}&timestamp=${Date.now()}`;
-            const qrCodeSelfSupplier = await QRCode.toDataURL(qrCodeSupplierSelfUrl);
+      const qrCodeSelfSupplier = await QRCode.toDataURL(qrCodeSupplierSelfUrl);
 
       registerUser = await prisma.seller.create({
         data: {
@@ -290,13 +290,13 @@ app.post('/onboard-user-by-admin', upload.single('file'), async (req: any, res: 
           state,
           filePath,
           qrCode: qrCodeSupplier,
-          qrCodeSelf : qrCodeSelfSupplier,
-          adminId: generatedAdminId, 
+          qrCodeSelf: qrCodeSelfSupplier,
+          adminId: generatedAdminId,
         }
       });
 
       registerUser = await prisma.seller.findMany({
-        orderBy: { createdAt: 'desc' } 
+        orderBy: { createdAt: 'desc' }
       });
     } else if (userType === 'retailer') {
       const qrCodeUrl = `${baseUrl}?type=retailer&id=${customId}&supplierId=${generatedAdminId}`;
@@ -316,7 +316,7 @@ app.post('/onboard-user-by-admin', upload.single('file'), async (req: any, res: 
           state,
           filePath,
           qrCode: qrCode,
-          adminId: generatedAdminId,  
+          adminId: generatedAdminId,
         }
       });
     } else {
@@ -329,7 +329,7 @@ app.post('/onboard-user-by-admin', upload.single('file'), async (req: any, res: 
       message: "User onboarded successfully.",
       data: registerUser,
     });
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Error onboarding user:", error);
     return res.status(500).json({ success: false, message: "Error onboarding user", error: error.message });
     // return res.status(500).json({ success: false, message: "Error onboarding user", error });
@@ -371,7 +371,7 @@ app.post("/api/guests/create", async (req: any, res: any) => {
         sellerId
       },
 
-      
+
     });
 
     // { message: 'Retailer added successfully', data: newGuest }

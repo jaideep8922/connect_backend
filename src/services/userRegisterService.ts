@@ -276,7 +276,7 @@ const generateCustomId = (userType: string): string => {
 };
 
 // const baseUrl = 'http://192.168.0.105:3000/onboard';
-const baseUrl = 'http://badasauda.com/'
+// const baseUrl = 'http://badasauda.com/'
 
 export const addUser = async (userData: any) => {
   try {
@@ -293,7 +293,8 @@ export const addUser = async (userData: any) => {
       city,
       state,
       filePath,
-      qrCodeSelf
+      qrCodeSelf,
+      baseUrl
     } = userData;
 
     const customId = generateCustomId(userType);
